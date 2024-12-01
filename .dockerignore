@@ -8,3 +8,10 @@ Thumbs.db
 .vscode/
 .idea/
 .fleet/
+
+# Lang: Rust
+debug/
+target/
+Cargo.lock
+**/*.rs.bk
+*.pdb
