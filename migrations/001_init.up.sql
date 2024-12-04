@@ -320,3 +320,9 @@ CREATE TABLE workflow_executions
     created_at  TIMESTAMP NOT NULL DEFAULT current_timestamp,
     deleted_at  TIMESTAMP          DEFAULT NULL
 );
+
+
+SELECT *
+FROM pg_extension;
+
+CREATE EXTENSION IF NOT EXISTS pg_cron;

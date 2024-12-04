@@ -13,7 +13,7 @@ RUN rm -rf /var/lib/apt/lists/*
 # non-executable *.sh scripts found in the directory to do further initialization
 # before starting the service.
 COPY scripts/001_config.sh /docker-entrypoint-initdb.d/001_config.sh
-COPY scripts/002_main.sql /docker-entrypoint-initdb.d/002_main.sql
+COPY scripts/002_enable.sql /docker-entrypoint-initdb.d/002_enable.sql
 
 # Grant appropriate permissions and set executable flag for the script.
 RUN chmod +x /docker-entrypoint-initdb.d/001_config.sh

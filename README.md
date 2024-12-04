@@ -1,11 +1,8 @@
-# database
-Unmodified Postgres 17 Docker image.
-
-
 ### axiston/database
 
-Persistence layer / data-access module for the Axiston gateway. Lorem Ipsum.
-Lorem Ipsum. Lorem Ipsum.
+Unmodified Postgres 17 Docker image with all extensions and migrations.
+
+Lorem Ipsum. Lorem Ipsum. Lorem Ipsum.
 
 #### Notes
 
