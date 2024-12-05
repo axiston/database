@@ -15,3 +15,7 @@ target/
 Cargo.lock
 **/*.rs.bk
 *.pdb
+
+# Generated
+/crates/migrate/query/
+/crates/connect/entity/

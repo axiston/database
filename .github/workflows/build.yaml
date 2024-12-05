@@ -1,4 +1,4 @@
-name: Docker (build & publish)
+name: Build & publish
 
 on:
   push:
@@ -9,13 +9,18 @@ on:
   pull_request: # Validation only (without pushing).
 
 jobs:
-  docker:
+  shellcheck:
     runs-on: ubuntu-latest
     steps:
-
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Run Shellcheck
+        uses: ludeeus/action-shellcheck@master
+
+  docker:
+    runs-on: ubuntu-latest
+    steps:
       - name: Initialize Docker image metadata
         id: meta
         uses: docker/metadata-action@v5
@@ -28,11 +33,11 @@ jobs:
 
           # Generates Docker tags based on the following events.
           tags: |
-            type=latest
+            type=raw,value=latest
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
             type=semver,pattern={{major}}
-            type=sha    
+            type=sha
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -54,3 +59,40 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: stable
+
+      - name: Run Cargo:fmt
+        run: cargo fmt --all -- --check
+
+      - name: Run Cargo:clippy
+        run: cargo clippy --all-features -- -D warnings
+
+      - name: Run Cargo:test
+        run: cargo test --verbose --all-features
+
+  publish:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    steps:
+      - name: Check out
+        uses: actions/checkout@v3
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: stable
+
+      - name: Publish
+        run: cargo publish --token ${CRATES_TOKEN}
+        env:
+          CRATES_TOKEN: ${{ secrets.CRATES_TOKEN }}
