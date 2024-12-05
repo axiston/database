@@ -1,98 +1,101 @@
 name: Build & publish
 
 on:
-  push:
-    branches:
-      - "main" # Trigger on main branch.
-    tags:
-      - "v*.*.*" # Trigger on semantic version tags.
-  pull_request: # Validation only (without pushing).
+    push:
+        branches:
+            - "main" # Trigger on main branch.
+        tags:
+            - "v*.*.*" # Trigger on semantic version tags.
+    pull_request: # Validation only (without pushing).
 
 jobs:
-  shellcheck:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+    shell:
+        runs-on: ubuntu-22.04
+        steps:
+            -   name: Checkout repository
+                uses: actions/checkout@v4
 
-      - name: Run Shellcheck
-        uses: ludeeus/action-shellcheck@master
+            -   name: Run Shellcheck
+                uses: ludeeus/action-shellcheck@master
+    
+    docker:
+        runs-on: ubuntu-22.04
+        steps:
+            -   name: Checkout repository
+                uses: actions/checkout@v4
 
-  docker:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Initialize Docker image metadata
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
+            -   name: Initialize Docker image metadata
+                id: meta
+                uses: docker/metadata-action@v5
+                with:
+                    
+                    # Lists Docker images to use as base name for tags.
+                    images: |
+                        axiston/postgres
+                        ghcr.io/axiston/postgres
+                    
+                    # Generates Docker tags based on the following events.
+                    tags: |
+                        type=raw,value=latest
+                        type=semver,pattern={{version}}
+                        type=semver,pattern={{major}}.{{minor}}
+                        type=semver,pattern={{major}}
+                        type=sha
 
-          # Lists Docker images to use as base name for tags.
-          images: |
-            axiston/postgres
-            ghcr.io/axiston/postgres
+            -   name: Set up QEMU
+                uses: docker/setup-qemu-action@v3
 
-          # Generates Docker tags based on the following events.
-          tags: |
-            type=raw,value=latest
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{major}}
-            type=sha
+            -   name: Set up Docker Buildx
+                uses: docker/setup-buildx-action@v3
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+            -   name: Log in to Docker Hub
+                if: github.event_name != 'pull_request'
+                uses: docker/login-action@v3
+                with:
+                    username: ${{ secrets.DOCKERHUB_USERNAME }}
+                    password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+            -   name: Build and push the Docker image
+                uses: docker/build-push-action@v6
+                with:
+                    context: .
+                    push: ${{ github.event_name != 'pull_request' }}
+                    tags: ${{ steps.meta.outputs.tags }}
+                    labels: ${{ steps.meta.outputs.labels }}
+    
+    build:
+        runs-on: ubuntu-22.04
+        steps:
+            -   name: Checkout repository
+                uses: actions/checkout@v4
 
-      - name: Log in to Docker Hub
-        if: github.event_name != 'pull_request'
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+            -   name: Set up Rust
+                uses: dtolnay/rust-toolchain@master
+                with:
+                    toolchain: stable
 
-      - name: Build and push the Docker image
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+            -   name: Run Cargo:fmt
+                run: cargo fmt --all -- --check
 
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+            -   name: Run Cargo:clippy
+                run: cargo clippy --all-features -- -D warnings
 
-      - name: Set up Rust
-        uses: dtolnay/rust-toolchain@master
-        with:
-          toolchain: stable
+            -   name: Run Cargo:test
+                run: cargo test --verbose --all-features
+    
+    publish:
+        runs-on: ubuntu-22.04
+        if: github.event_name == 'push'
+        steps:
+            -   name: Check out
+                uses: actions/checkout@v3
 
-      - name: Run Cargo:fmt
-        run: cargo fmt --all -- --check
+            -   name: Set up Rust
+                uses: dtolnay/rust-toolchain@master
+                with:
+                    toolchain: stable
 
-      - name: Run Cargo:clippy
-        run: cargo clippy --all-features -- -D warnings
-
-      - name: Run Cargo:test
-        run: cargo test --verbose --all-features
-
-  publish:
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push'
-    steps:
-      - name: Check out
-        uses: actions/checkout@v3
-
-      - name: Set up Rust
-        uses: dtolnay/rust-toolchain@master
-        with:
-          toolchain: stable
-
-      - name: Publish
-        run: cargo publish --token ${CRATES_TOKEN}
-        env:
-          CRATES_TOKEN: ${{ secrets.CRATES_TOKEN }}
+            -   name: Publish
+                run: cargo publish --token ${CRATES_TOKEN}
+                env:
+                    CRATES_TOKEN: ${{ secrets.CRATES_TOKEN }}
