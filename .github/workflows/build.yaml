@@ -17,7 +17,7 @@ jobs:
 
             -   name: Run Shellcheck
                 uses: ludeeus/action-shellcheck@master
-    
+
     docker:
         runs-on: ubuntu-22.04
         steps:
@@ -28,12 +28,12 @@ jobs:
                 id: meta
                 uses: docker/metadata-action@v5
                 with:
-                    
+
                     # Lists Docker images to use as base name for tags.
                     images: |
                         axiston/postgres
                         ghcr.io/axiston/postgres
-                    
+
                     # Generates Docker tags based on the following events.
                     tags: |
                         type=raw,value=latest
@@ -62,7 +62,7 @@ jobs:
                     push: ${{ github.event_name != 'pull_request' }}
                     tags: ${{ steps.meta.outputs.tags }}
                     labels: ${{ steps.meta.outputs.labels }}
-    
+
     build:
         runs-on: ubuntu-22.04
         steps:
@@ -82,7 +82,7 @@ jobs:
 
             -   name: Run Cargo:test
                 run: cargo test --verbose --all-features
-    
+
     publish:
         runs-on: ubuntu-22.04
         if: github.event_name == 'push'

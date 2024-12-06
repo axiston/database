@@ -3,7 +3,6 @@
 [workspace]
 resolver = "2"
 members = [
-    "./crates/cli",
     "./crates/connect",
     "./crates/migrate",
 ]
@@ -23,18 +22,14 @@ documentation = "https://docs.rs/axiston"
 axiston-database-connect = { path = "./crates/connect", version = "0.1.0" }
 axiston-database-migrate = { path = "./crates/migrate", version = "0.1.0" }
 
-sea-orm = { version = "1.1", features = ["runtime-tokio-rustls", "sqlx-postgres", "macros"] }
-sea-orm-migration = { version = "1.1", features = ["runtime-tokio-rustls", "sqlx-postgres"] }
-sea-orm-cli = { version = "1.1", features = ["runtime-tokio-rustls"] }
-
 tokio = { version = "1.41", features = ["rt-multi-thread", "macros", "process"] }
+diesel = { version = "2.2", features = ["time", "uuid", "ipnet-address"] }
+diesel_migrations = { version = "2.2", features = ["postgres"] }
+diesel-async = { version = "0.5", features = ["postgres", "pool", "deadpool"] }
+deadpool = { version = "0.12", features = ["rt_tokio_1"] }
 futures = { version = "0.3", features = [] }
-async-trait = { version = "0.1.83", features = [] }
+
 tracing = { version = "0.1", features = [] }
-
+derive_more = { version = "1.0", features = ["from", "deref", "deref_mut"] }
 thiserror = { version = "2.0", features = [] }
-anyhow = { version = "1.0", features = ["backtrace"] }
-
-derive_more = { version = "1.0", features = ["full"] }
 serde = { version = "1.0", features = ["derive"] }
-serde_with = { version = "3.11", features = [] }

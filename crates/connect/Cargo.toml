@@ -21,18 +21,15 @@ rustdoc-args = ["--cfg", "docsrs"]
 path = "lib.rs"
 
 [dependencies]
-sea-orm = { workspace = true }
+diesel = { workspace = true }
+diesel-async = { workspace = true }
+deadpool = { workspace = true }
 futures = { workspace = true }
+
 tracing = { workspace = true }
-async-trait = { workspace = true }
-thiserror = { workspace = true }
 derive_more = { workspace = true }
+thiserror = { workspace = true }
 serde = { workspace = true }
 
 [dev-dependencies]
 tokio = { workspace = true }
-
-[build-dependencies]
-tokio = { workspace = true }
-tracing = { workspace = true }
-anyhow = { workspace = true }

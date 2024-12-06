@@ -5,55 +5,61 @@
 //! ### Examples
 //!
 //! ```rust,no_run
-//! use axiston_database_connect::{Result, AppDatabase};
+//! use axiston_database_connect::{DatabaseResult, Database};
 //!
 //! #[tokio::main]
-//! async fn main() -> Result<()> {
+//! async fn main() -> DatabaseResult<()> {
 //!     let addr = "postgresql://usr:pwd@localhost:5432/db";
-//!     let conn = AppDatabase::connect_single_instance(addr).await;
+//!     let _ = Database::new_single_gateway(addr);
 //!     Ok(())
 //! }
 //! ```
 
-use derive_more::{Deref, DerefMut, From};
-use sea_orm::DbErr;
+use deadpool::managed::TimeoutType;
+use diesel::result::{ConnectionError, Error};
+use diesel_async::pooled_connection::deadpool::PoolError;
+use diesel_async::pooled_connection::PoolError as PoolError2;
 
-pub use crate::config::{AppDatabase, ConstraintViolation};
+use crate::config::ConstraintViolation;
+pub use crate::config::{Database, DatabaseConfig};
 
 mod config;
 mod entity;
 mod query;
 
-/// Unrecoverable failure of the [`AppDatabase`].
+/// Unrecoverable failure of the [`Database`].
 ///
 /// Includes all error types that may occur.
-#[derive(Debug, From, Deref, DerefMut, thiserror::Error)]
-#[error("underlying sql driver failure: {inner}")]
+#[derive(Debug, thiserror::Error)]
 #[must_use = "errors do nothing unless you use them"]
-pub struct Error {
-    inner: DbErr,
+pub enum DatabaseError {
+    /// [`deadpool::managed::PoolError::Timeout`].
+    #[error("timeout error")]
+    Timeout(TimeoutType),
+    /// [`diesel_async::pooled_connection::PoolError::ConnectionError`]
+    #[error("connection error: {0}")]
+    Connection(ConnectionError),
+    /// [`diesel_async::pooled_connection::PoolError::QueryError`]
+    #[error("query error: {0}")]
+    Query(Error),
 }
 
-impl Error {
-    /// Returns a new [`Error`].
+impl DatabaseError {
+    /// Returns a new [`DatabaseError`].
     #[inline]
-    pub fn new(inner: DbErr) -> Self {
-        Self { inner }
-    }
-
-    /// Parses a constraint violation from the underlying error.
-    pub fn constraint(&self) -> Option<ConstraintViolation> {
-        self.inner.sql_err().and_then(ConstraintViolation::new)
-    }
-
-    /// Returns the underlying database error.
-    #[inline]
-    pub fn into_inner(self) -> DbErr {
-        self.inner
+    pub fn new(inner: PoolError) -> Self {
+        match inner {
+            PoolError::Timeout(timeout_type) => Self::Timeout(timeout_type),
+            PoolError::Backend(PoolError2::ConnectionError(connection_error)) => {
+                Self::Connection(connection_error)
+            }
+            PoolError::Backend(PoolError2::QueryError(query_error)) => Self::Query(query_error),
+            PoolError::PostCreateHook(_) => unreachable!(),
+            PoolError::NoRuntimeSpecified => unreachable!(),
+            PoolError::Closed => unreachable!(),
+        }
     }
 }
 
-/// Specialized [`Result`] alias for the [`Error`] type.
-///
-/// [`Result`]: std::result::Result
-pub type Result<T, E = Error> = std::result::Result<T, E>;
+/// Specialized [`Result`] alias for the [`DatabaseError`] type.
+pub type DatabaseResult<T, E = DatabaseError> = Result<T, E>;

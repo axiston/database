@@ -5,53 +5,56 @@
 //! ### Examples
 //!
 //! ```rust,no_run
-//! use axiston_database_migrate::{Result, DatabaseConnectionExt};
-//! use sea_orm::{ConnectOptions, Database};
+//! use axiston_database_migrate::{DatabaseMigratorResult, DatabaseMigrator};
+//! use diesel_async::AsyncPgConnection;
+//! use diesel_async::pooled_connection::deadpool::Object;
+//!
+//! fn get_connection() -> Object<AsyncPgConnection> {
+//!     todo!()
+//! }
 //!
 //! #[tokio::main]
-//! async fn main() -> Result<()> {
-//!     let addr = "postgresql://usr:pwd@localhost:5432/db";
-//!     let opts = ConnectOptions::new(addr);
-//!     let conn = Database::connect(opts).await?;
-//!     conn.apply_migrations(None).await?;
-//!     conn.rollback_migrations(None).await?;
+//! async fn main() -> DatabaseMigratorResult<()> {
+//!     let mut x = DatabaseMigrator::new(get_connection());
+//!     x.apply_migrations().await?;
 //!     Ok(())
 //! }
 //! ```
 
+use std::error::Error;
+
 use derive_more::{Deref, DerefMut, From};
-use sea_orm::DbErr;
+
+pub use crate::config::DatabaseMigrator;
 
 mod config;
-mod migration;
 
-pub use crate::migration::{AppMigrator, DatabaseConnectionExt};
+/// Type-erased [`Error`] type.
+pub type BoxError = Box<dyn Error + Send + Sync>;
 
-/// Unrecoverable failure of the [`AppMigrator`].
+/// Unrecoverable failure of the [`DatabaseMigrator`].
 ///
 /// Includes all error types that may occur.
 #[derive(Debug, From, Deref, DerefMut, thiserror::Error)]
 #[error("underlying sql driver failure: {inner}")]
 #[must_use = "errors do nothing unless you use them"]
-pub struct Error {
-    inner: DbErr,
+pub struct DatabaseMigratorError {
+    inner: BoxError,
 }
 
-impl Error {
-    /// Returns a new [`Error`].
+impl DatabaseMigratorError {
+    /// Returns a new [`DatabaseMigratorError`].
     #[inline]
-    pub fn new(inner: DbErr) -> Self {
+    pub fn new(inner: BoxError) -> Self {
         Self { inner }
     }
 
     /// Returns the underlying database error.
     #[inline]
-    pub fn into_inner(self) -> DbErr {
+    pub fn into_inner(self) -> BoxError {
         self.inner
     }
 }
 
-/// Specialized [`Result`] alias for the [`Error`] type.
-///
-/// [`Result`]: std::result::Result
-pub type Result<T, E = Error> = std::result::Result<T, E>;
+/// Specialized [`Result`] alias for the [`DatabaseMigratorError`] type.
+pub type DatabaseMigratorResult<T, E = DatabaseMigratorError> = Result<T, E>;
