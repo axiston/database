@@ -10,7 +10,7 @@ use diesel_async::pooled_connection::deadpool::Object;
 use diesel_async::AsyncPgConnection;
 use diesel_migrations::MigrationHarness;
 
-use crate::config::custom_hooks::MIGRATIONS;
+use crate::config::embedded_query::MIGRATIONS;
 use crate::DatabaseMigratorResult;
 
 /// Asynchronous `postgres` migrator.
@@ -28,13 +28,13 @@ impl DatabaseMigrator {
     }
 
     /// Applies all pending migrations.
-    pub fn apply_migrations(&mut self) -> DatabaseMigratorResult<()> {
+    pub async fn apply_migrations(&mut self) -> DatabaseMigratorResult<()> {
         let _ = self.conn.run_pending_migrations(MIGRATIONS)?;
         Ok(())
     }
 
     /// Rolls back all migrations.
-    pub fn rollback_migrations(&mut self) -> DatabaseMigratorResult<()> {
+    pub async fn rollback_migrations(&mut self) -> DatabaseMigratorResult<()> {
         let _ = self.conn.revert_all_migrations(MIGRATIONS)?;
         Ok(())
     }

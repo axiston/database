@@ -19,7 +19,7 @@ $$ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION manage_updated_at(_tbl REGCLASS) RETURNS VOID AS
 $$
 BEGIN
-    EXECUTE format('CREATE TRIGGER set_updated_at BEFORE UPDATE ON %s
-                    FOR EACH ROW EXECUTE PROCEDURE refresh_updated_at()', _tbl);
+    EXECUTE format('CREATE OR REPLACE TRIGGER %s_refresh_updated_at BEFORE UPDATE ON %s
+                    FOR EACH ROW EXECUTE PROCEDURE refresh_updated_at()', _tbl, _tbl);
 END;
 $$ LANGUAGE plpgsql;

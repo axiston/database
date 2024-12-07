@@ -1,4 +1,5 @@
 #![forbid(unsafe_code)]
+#![allow(async_fn_in_trait)]
 #![cfg_attr(docsrs, feature(doc_cfg))]
 #![doc = include_str!("./README.md")]
 
@@ -22,10 +23,11 @@ use diesel_async::pooled_connection::PoolError as PoolError2;
 
 use crate::config::ConstraintViolation;
 pub use crate::config::{Database, DatabaseConfig};
+pub use crate::query::{account_queries, project_queries, workflow_queries};
 
 mod config;
-mod entity;
 mod query;
+mod schema;
 
 /// Unrecoverable failure of the [`Database`].
 ///
@@ -58,6 +60,13 @@ impl DatabaseError {
             PoolError::NoRuntimeSpecified => unreachable!(),
             PoolError::Closed => unreachable!(),
         }
+    }
+}
+
+impl From<Error> for DatabaseError {
+    #[inline]
+    fn from(value: Error) -> Self {
+        Self::Query(value)
     }
 }
 

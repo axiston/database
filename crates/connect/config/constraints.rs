@@ -12,7 +12,7 @@
 #[derive(Debug, Default, Copy, Clone, PartialEq, Eq)]
 #[must_use = "constraints do nothing unless you use them"]
 pub enum ConstraintViolation {
-    // TODO: Remove Unknown,
+    // TODO: Remove Self::Unknown.
     #[default]
     Unknown,
 }
@@ -20,20 +20,16 @@ pub enum ConstraintViolation {
 impl ConstraintViolation {
     /// Returns a new [`ConstraintViolation`].
     pub fn new(constraint: &str) -> Option<Self> {
-        todo!()
-    }
-
-    /// Parses a [`ConstraintViolation`] from a unique constraint violation.
-    fn parse_unique_constraint_violation(constraint: &str) -> Option<Self> {
         match constraint {
             _ => None,
         }
     }
 
-    /// Parses a [`ConstraintViolation`] from a foreign key constraint violation.
-    fn parse_foreign_constraint_violation(constraint: &str) -> Option<Self> {
-        match constraint {
-            _ => None,
+    /// Returns the constraint name.
+    #[must_use]
+    pub fn as_str(&self) -> &str {
+        match self {
+            ConstraintViolation::Unknown => "unknown",
         }
     }
 }
@@ -43,14 +39,14 @@ mod test {
     use crate::{ConstraintViolation, DatabaseResult};
 
     #[test]
-    fn unique_constraint_violation() -> DatabaseResult<()> {
-        let _ = ConstraintViolation::new();
+    fn parse_constraint_violation() -> DatabaseResult<()> {
+        let _ = ConstraintViolation::new("unknown_constraint");
         Ok(())
     }
 
     #[test]
-    fn foreign_key_constraint_violation() -> DatabaseResult<()> {
-        let _ = ConstraintViolation::new();
+    fn stringify_constraint_violation() -> DatabaseResult<()> {
+        let _ = ConstraintViolation::Unknown.as_str();
         Ok(())
     }
 }

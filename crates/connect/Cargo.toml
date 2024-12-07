@@ -23,13 +23,17 @@ path = "lib.rs"
 [dependencies]
 diesel = { workspace = true }
 diesel-async = { workspace = true }
+diesel-derive-enum = { workspace = true }
 deadpool = { workspace = true }
 futures = { workspace = true }
 
 tracing = { workspace = true }
 derive_more = { workspace = true }
 thiserror = { workspace = true }
+
 serde = { workspace = true }
+uuid = { workspace = true }
+ipnet = { workspace = true }
 
 [dev-dependencies]
 tokio = { workspace = true }

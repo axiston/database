@@ -23,25 +23,25 @@ impl DatabaseConfig {
         Self::default()
     }
 
-    /// Overwrites the default of [`DatabaseConfig`]`::max_conn`.
+    /// Overwrites the default value of [`DatabaseConfig`]`::max_conn`.
     pub fn with_max_conn(mut self, max_conn: usize) -> Self {
         self.max_conn = Some(max_conn);
         self
     }
 
-    /// Overwrites the default of [`DatabaseConfig`]`::create_timeout`.
+    /// Overwrites the default value of [`DatabaseConfig`]`::create_timeout`.
     pub fn with_create_timeout(mut self, create_timeout: Duration) -> Self {
         self.create_timeout = Some(create_timeout);
         self
     }
 
-    /// Overwrites the default of [`DatabaseConfig`]`::wait_timeout`.
+    /// Overwrites the default value of [`DatabaseConfig`]`::wait_timeout`.
     pub fn with_wait_timeout(mut self, wait_timeout: Duration) -> Self {
         self.wait_timeout = Some(wait_timeout);
         self
     }
 
-    /// Overwrites the default of [`DatabaseConfig`]`::recycle_timeout`.
+    /// Overwrites the default value of [`DatabaseConfig`]`::recycle_timeout`.
     pub fn with_recycle_timeout(mut self, recycle_timeout: Duration) -> Self {
         self.recycle_timeout = Some(recycle_timeout);
         self

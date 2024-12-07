@@ -1,4 +1,4 @@
--- Creates the table to manage user account information.
+-- Creates the `accounts` table to manage user account information.
 CREATE TABLE accounts
 (
     -- Unique identifier for each account (used as a public resource).
@@ -38,7 +38,7 @@ CREATE INDEX accounts_local_credentials_idx ON accounts (email_address, password
 -- Automatically updates the `updated_at` timestamp.
 SELECT manage_updated_at('accounts');
 
--- Creates the table to manage user sessions.
+-- Creates the `account_sessions` table to manage user sessions.
 CREATE TABLE account_sessions
 (
     -- Unique token for each session, per account.
@@ -49,9 +49,9 @@ CREATE TABLE account_sessions
     region_id  CHAR(2)   NOT NULL DEFAULT 'A0',
 
     -- Each token sequence must be unique per account.
-    CONSTRAINT accounts_sessions_pkey PRIMARY KEY (account_id, token_seq),
+    CONSTRAINT account_sessions_pkey PRIMARY KEY (account_id, token_seq),
     -- Region identifier must be alphanumeric and exactly 2 characters.
-    CONSTRAINT accounts_sessions_region_alphanumeric CHECK (region_id ~ '^[A-Z0-9]{2}$'),
+    CONSTRAINT account_sessions_region_alphanumeric CHECK (region_id ~ '^[A-Z0-9]{2}$'),
 
     -- Security-related session information.
     ip_address INET      NOT NULL,
@@ -63,15 +63,16 @@ CREATE TABLE account_sessions
     deleted_at TIMESTAMP          DEFAULT NULL,
 
     -- Constraints to ensure proper lifecycle management.
-    CONSTRAINT accounts_sessions_expired_after_issued CHECK (expired_at >= issued_at),
-    CONSTRAINT accounts_sessions_deleted_after_issued CHECK (deleted_at IS NULL OR deleted_at >= issued_at)
+    CONSTRAINT account_sessions_expired_after_issued CHECK (expired_at >= issued_at),
+    CONSTRAINT account_sessions_deleted_after_issued CHECK (deleted_at IS NULL OR deleted_at >= issued_at)
 );
 
 -- Optimizes lookup for active sessions by account & token.
-CREATE INDEX accounts_sessions_only_active_idx ON account_sessions (account_id, token_seq)
+CREATE INDEX account_sessions_only_active_idx ON account_sessions (account_id)
     WHERE deleted_at IS NULL;
 
--- Creates the table to track user privileges (universal read & write rights).
+-- Creates the `account_permissions` table to track user privileges.
+-- Includes universal read & write rights.
 CREATE TABLE account_permissions
 (
     -- Reference to the associated account.
@@ -91,13 +92,13 @@ CREATE TABLE account_permissions
 );
 
 -- Optimizes lookup for active permissions with absolute privileges.
-CREATE INDEX accounts_permissions_absolute_idx ON account_permissions (account_id)
+CREATE INDEX account_permissions_absolute_idx ON account_permissions (account_id)
     WHERE deleted_at IS NOT NULL AND nocheck_read IS TRUE AND nocheck_write IS TRUE;
 
 -- Defines an enumeration for email (action) types.
 CREATE TYPE EMAIL_TYPE AS ENUM ('confirm_email', 'update_email', 'reset_password');
 
--- Create the table to track sent email and email-related actions.
+-- Creates the `account_emails` table to track email actions.
 CREATE TABLE account_emails
 (
     -- Reference to the associated account.
@@ -109,7 +110,7 @@ CREATE TABLE account_emails
     CONSTRAINT account_emails_unique_token_idx PRIMARY KEY (account_id, action_token),
 
     -- Email address and action details.
-    account_email TEXT       NOT NULL,
+    email_address TEXT       NOT NULL,
     action_type   EMAIL_TYPE NOT NULL,
 
     -- Timestamps for tracking the row's lifecycle.

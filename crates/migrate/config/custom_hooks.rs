@@ -1,6 +1,2 @@
-//! TODO.
-
-use diesel_migrations::{embed_migrations, EmbeddedMigrations};
-
-// Migration source that embeds migrations into the final binary.
-pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!("./../../migrations");
+//! Includes all callbacks and hooks for [`diesel`] and [`tracing`].
+//!

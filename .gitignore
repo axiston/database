@@ -17,5 +17,4 @@ Cargo.lock
 *.pdb
 
 # Generated
-/crates/migrate/query/
-/crates/connect/entity/
+/crates/connect/schema.rs

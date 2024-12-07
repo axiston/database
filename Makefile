@@ -1,44 +1,38 @@
-# Makefile for SeaORM Migration and Entity Generation
-
-# Directories
-CONNECT_DIR=./crates/connect
-MIGRATE_DIR=./crates/migrate
-ENTITY_OUTPUT_DIR=./entity
-
-# Commands
-SEA_ORM_CLI=sea-orm-cli
+# Makefile for Diesel Migration and Entity Generation
+# https://diesel.rs/guides/getting-started
 
 # Environment Variables
-DATABASE_URL=$(DATABASE_URL)
-DATABASE_SCHEMA=$(or $(DATABASE_SCHEMA),public)
+SCHEMA_OUTPUT = ./crates/connect/schema.rs
+DATABASE_URL = postgresql://usr:pwd@localhost:5432/db
 
-# https://www.sea-ql.org/SeaORM/docs/migration/writing-migration/
-.PHONY: create
-create:
-	@echo "Generating a new migration..."
-	@read -p "Enter migration name: " name; \
-	cd $(MIGRATE_DIR) && $(SEA_ORM_CLI) migrate generate "$$name"; \
-	echo "Migration '$$name' created successfully."
+all: migrate
 
-# https://www.sea-ql.org/SeaORM/docs/migration/running-migration/
+.PHONY: install
+install: ## # Installs the Diesel CLI.
+	$(call print-info, "Installing Diesel CLI...")
+	cargo install diesel_cli --no-default-features --features postgres
+	$(call print-success, "Diesel CLI installed successfully.")
+
 .PHONY: migrate
-migrate:
-	@echo "Running migrations..."
-	cd $(MIGRATE_DIR) && $(SEA_ORM_CLI) migrate up
-	@echo "Migrations executed successfully."
+migrate: ## Runs all database migrations.
+	$(call print-info, "Running migrations...")
+	DATABASE_URL=$(DATABASE_URL) diesel migration run
+	$(call print-success, "Migrations applied successfully.")
 
-# https://www.sea-ql.org/SeaORM/docs/generate-entity/sea-orm-cli/
+.PHONY: rollback
+rollback: ## Rolls back the last migration.
+	$(call print-info, "Rolling back last migration...")
+	DATABASE_URL=$(DATABASE_URL) diesel migration revert
+	$(call print-success, "Migration rolled back successfully.")
+
+.PHONY: clean
+clean: ## Deletes the output schema file.
+	$(call print-info, "Cleaning project...")
+	rm -f $(SCHEMA_OUTPUT)
+	$(call print-success, "Project cleaned.")
+
 .PHONY: generate
-generate:
-	@echo "Regenerating entities..."
-	cd $(CONNECT_DIR) && \
-	$(SEA_ORM_CLI) generate entity \
-		--database-url "$(DATABASE_URL)" \
-		--database-schema "$(DATABASE_SCHEMA)" \
-		--output-dir "$(ENTITY_OUTPUT_DIR)" \
-		--date-time-crate "time" \
-		--with-serde "both" \
-		--with-copy-enums \
-		--expanded-format \
-		--verbose
-	@echo "Entities regenerated successfully."
+generate: ## Generates and updates the schema file.
+	$(call print-info, "Printing database schema...")
+	DATABASE_URL=$(DATABASE_URL) diesel print-schema > $(SCHEMA_OUTPUT)
+	$(call print-success, "Schema updated successfully in $(SCHEMA_OUTPUT)")
