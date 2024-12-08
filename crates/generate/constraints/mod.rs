@@ -36,17 +36,15 @@ impl ConstraintViolation {
 
 #[cfg(test)]
 mod test {
-    use crate::{ConstraintViolation, DatabaseResult};
+    use crate::constraints::ConstraintViolation;
 
     #[test]
-    fn parse_constraint_violation() -> DatabaseResult<()> {
+    fn parse_constraint_violation()  {
         let _ = ConstraintViolation::new("unknown_constraint");
-        Ok(())
     }
 
     #[test]
-    fn stringify_constraint_violation() -> DatabaseResult<()> {
+    fn stringify_constraint_violation() {
         let _ = ConstraintViolation::Unknown.as_str();
-        Ok(())
     }
 }

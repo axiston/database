@@ -1,7 +1,7 @@
 # https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [package]
-name = "axiston-database-migrate"
+name = "axiston-db-migrate"
 version = { workspace = true }
 edition = { workspace = true }
 license = { workspace = true }

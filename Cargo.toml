@@ -3,7 +3,7 @@
 [workspace]
 resolver = "2"
 members = [
-    "./crates/connect",
+    "./crates/generate",
     "./crates/migrate",
 ]
 
@@ -19,22 +19,13 @@ homepage = "https://github.com/axiston/axiston"
 documentation = "https://docs.rs/axiston"
 
 [workspace.dependencies]
-axiston-database-connect = { path = "./crates/connect", version = "0.1.0" }
-axiston-database-migrate = { path = "./crates/migrate", version = "0.1.0" }
-
 tokio = { version = "1.41", features = ["rt-multi-thread", "macros", "process"] }
-deadpool = { version = "0.12", features = ["rt_tokio_1"] }
-futures = { version = "0.3", features = [] }
+tracing = { version = "0.1", features = [] }
+derive_more = { version = "1.0", features = ["from", "deref", "deref_mut"] }
+thiserror = { version = "2.0", features = [] }
 
 diesel = { version = "2.2", features = ["time", "uuid", "ipnet-address"] }
 diesel_migrations = { version = "2.2", features = ["postgres"] }
 diesel-async = { version = "0.5", features = ["postgres", "pool", "deadpool"] }
 diesel-derive-enum = { version = "2.1", features = ["postgres"] }
 
-tracing = { version = "0.1", features = [] }
-derive_more = { version = "1.0", features = ["from", "deref", "deref_mut"] }
-thiserror = { version = "2.0", features = [] }
-
-serde = { version = "1.0", features = ["derive"] }
-uuid = { version = "1.11", features = ["serde"] }
-ipnet = { version = "2.10", features = ["serde"] }
