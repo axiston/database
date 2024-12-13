@@ -21,7 +21,6 @@
 //! }
 //! ```
 
-
 use derive_more::{Deref, DerefMut, From};
 
 pub use crate::config::DatabaseMigrator;

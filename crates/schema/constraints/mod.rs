@@ -1,5 +1,7 @@
 //! Includes a comprehensive list of all constraint violations.
 
+use std::ops::Deref;
+
 /// Comprehensive list of all constraint violations.
 ///
 /// Includes both unique constraint violations and
@@ -33,12 +35,21 @@ impl ConstraintViolation {
     }
 }
 
+impl Deref for ConstraintViolation {
+    type Target = str;
+
+    #[inline]
+    fn deref(&self) -> &Self::Target {
+        self.as_str()
+    }
+}
+
 #[cfg(test)]
 mod test {
     use crate::constraints::ConstraintViolation;
 
     #[test]
-    fn parse_constraint_violation()  {
+    fn parse_constraint_violation() {
         let _ = ConstraintViolation::new("unknown_constraint");
     }
 
