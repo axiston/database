@@ -73,7 +73,7 @@ jobs:
                     toolchain: nightly
 
             -   name: Run Database Tasks
-                uses: ./.github/actions/migrate-generate
+                uses: ./.github/actions/migrate
 
             -   name: Run Cargo:fmt
                 run: cargo +nightly fmt --all -- --check
