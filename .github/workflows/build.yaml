@@ -66,6 +66,15 @@ jobs:
 
     build:
         runs-on: ubuntu-22.04
+        services:
+            postgres:
+                image: postgres:latest
+                ports:
+                    - 5432:5432
+                env:
+                    POSTGRES_USER: usr
+                    POSTGRES_PASSWORD: pwd
+                    POSTGRES_DB: db
         steps:
             -   name: Checkout repository
                 uses: actions/checkout@v4
@@ -75,6 +84,15 @@ jobs:
                 with:
                     components: clippy,rustfmt
                     toolchain: nightly
+
+            -   name: "Run Make Install: Installs the Diesel CLI"
+                run: make install
+
+            -   name: "Run Make Migrate: Runs all Postgres migrations"
+                run: make migrate
+
+            -   name: 'Run Make Generate: Generates the schema file'
+                run: make generate
 
             -   name: Run Cargo:fmt
                 run: cargo +nightly fmt --all -- --check
@@ -86,6 +104,7 @@ jobs:
                 run: cargo test --verbose --all-features
 
     publish:
+        needs: build
         runs-on: ubuntu-22.04
         if: github.event_name == 'push'
         steps:

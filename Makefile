@@ -8,13 +8,13 @@ DATABASE_URL = postgresql://usr:pwd@localhost:5432/db
 all: migrate
 
 .PHONY: install
-install: ## # Installs the Diesel CLI.
+install: ## Installs the Diesel CLI.
 	$(call print-info, "Installing Diesel CLI...")
 	cargo install diesel_cli --no-default-features --features postgres
 	$(call print-success, "Diesel CLI installed successfully.")
 
 .PHONY: migrate
-migrate: ## Runs all database migrations.
+migrate: ## Runs all Postgres migrations.
 	$(call print-info, "Running migrations...")
 	DATABASE_URL=$(DATABASE_URL) diesel migration run
 	$(call print-success, "Migrations applied successfully.")
