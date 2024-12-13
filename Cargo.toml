@@ -3,8 +3,8 @@
 [workspace]
 resolver = "2"
 members = [
-    "./crates/generate",
     "./crates/migrate",
+    "./crates/schema",
 ]
 
 [workspace.package]
@@ -28,4 +28,3 @@ diesel = { version = "2.2", features = ["time", "uuid", "ipnet-address"] }
 diesel_migrations = { version = "2.2", features = ["postgres"] }
 diesel-async = { version = "0.5", features = ["postgres", "pool", "deadpool"] }
 diesel-derive-enum = { version = "2.1", features = ["postgres"] }
-

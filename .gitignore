@@ -17,4 +17,4 @@ Cargo.lock
 *.pdb
 
 # Generated
-/crates/generate/schema.rs
+/crates/schema/schema.rs

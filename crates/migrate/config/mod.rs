@@ -28,15 +28,15 @@ impl DatabaseMigrator {
     }
 
     /// Applies all pending migrations.
-    pub async fn apply_migrations(&mut self) -> DatabaseMigratorResult<()> {
-        let _ = self.conn.run_pending_migrations(MIGRATIONS)?;
-        Ok(())
+    pub async fn apply_migrations(&mut self) -> DatabaseMigratorResult<usize> {
+        let versions = self.conn.run_pending_migrations(MIGRATIONS)?;
+        Ok(versions.len())
     }
 
     /// Rolls back all migrations.
-    pub async fn rollback_migrations(&mut self) -> DatabaseMigratorResult<()> {
-        let _ = self.conn.revert_all_migrations(MIGRATIONS)?;
-        Ok(())
+    pub async fn rollback_migrations(&mut self) -> DatabaseMigratorResult<usize> {
+        let versions = self.conn.revert_all_migrations(MIGRATIONS)?;
+        Ok(versions.len())
     }
 }
 

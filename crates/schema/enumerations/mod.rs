@@ -1,7 +1,7 @@
-//! TODO.
-//!
+//! Implements type-safe enumerations for database queries.
 
-#[derive(Debug, Clone, diesel_derive_enum::DbEnum)]
+/// Implements a type-safe `EmailType` enumeration.
+#[derive(Debug, Clone, Copy, diesel_derive_enum::DbEnum)]
 #[ExistingTypePath = "crate::schema::sql_types::EmailType"]
 pub enum EmailTypeForm {
     #[db_rename = "confirm_email"]
@@ -12,7 +12,8 @@ pub enum EmailTypeForm {
     ResetPassword,
 }
 
-#[derive(Debug, Clone, diesel_derive_enum::DbEnum)]
+/// Implements a type-safe `InviteStatus` enumeration.
+#[derive(Debug, Clone, Copy, diesel_derive_enum::DbEnum)]
 #[ExistingTypePath = "crate::schema::sql_types::InviteStatus"]
 pub enum InviteStatusForm {
     #[db_rename = "pending"]

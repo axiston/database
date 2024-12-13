@@ -1,5 +1,5 @@
 -- Drops the `account_emails` and associated objects.
-DROP TABLE IF EXISTS account_emails;
+DROP TABLE IF EXISTS account_actions;
 DROP TYPE IF EXISTS EMAIL_TYPE;
 
 -- Drop the `account_permissions` and `account_sessions` table.

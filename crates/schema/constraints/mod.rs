@@ -1,5 +1,4 @@
 //! Includes a comprehensive list of all constraint violations.
-//!
 
 /// Comprehensive list of all constraint violations.
 ///

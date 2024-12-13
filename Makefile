@@ -2,7 +2,7 @@
 # https://diesel.rs/guides/getting-started
 
 # Environment Variables
-SCHEMA_OUTPUT = ./crates/generate/schema.rs
+SCHEMA_OUTPUT = ./crates/schema/schema.rs
 DATABASE_URL = postgresql://usr:pwd@localhost:5432/db
 
 all: migrate

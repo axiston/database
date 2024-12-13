@@ -23,8 +23,8 @@ Unmodified Postgres 17 Docker image with all extensions and migrations.
 
 - Depends on [diesel][diesel] as an object–relational mapping and
   [diesel_migrations][diesel_migrations] as a migration tool.
-- Depends on community crates [diesel_async][diesel_async] for asynchronous
-  connections and [diesel_derive_enum][diesel_derive_enum] for enum boilerplate.
+- Depends on [diesel_async][diesel_async] for asynchronous connections and
+  [diesel_derive_enum][diesel_derive_enum] for enum boilerplate.
 
 [pg_cron]: https://github.com/citusdata/pg_cron
 [diesel]: https://crates.io/crates/diesel

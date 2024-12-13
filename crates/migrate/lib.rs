@@ -5,7 +5,7 @@
 //! ### Examples
 //!
 //! ```rust,no_run
-//! use axiston_database_migrate::{DatabaseMigratorResult, DatabaseMigrator};
+//! use axiston_db_migrate::{DatabaseMigratorResult, DatabaseMigrator};
 //! use diesel_async::AsyncPgConnection;
 //! use diesel_async::pooled_connection::deadpool::Object;
 //!
@@ -21,7 +21,6 @@
 //! }
 //! ```
 
-use std::error::Error;
 
 use derive_more::{Deref, DerefMut, From};
 
@@ -30,7 +29,7 @@ pub use crate::config::DatabaseMigrator;
 mod config;
 
 /// Type-erased [`Error`] type.
-pub type BoxError = Box<dyn Error + Send + Sync>;
+pub type BoxError = Box<dyn std::error::Error + Send + Sync>;
 
 /// Unrecoverable failure of the [`DatabaseMigrator`].
 ///
