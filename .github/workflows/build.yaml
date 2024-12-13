@@ -1,13 +1,13 @@
-name: ci & cd
+name: CI & CD
 
 on:
     push:
         branches:
-            - "main" # Trigger on main branch.
+            - "main" # Trigger on pushes to the main branch.
         tags:
             - "v*.*.*" # Trigger on semantic version tags.
-    pull_request: # Validation only (without pushing).
-    workflow_dispatch:
+    pull_request: # Trigger validation on pull requests.
+    workflow_dispatch: # Manual trigger.
 
 jobs:
     shell:
@@ -29,13 +29,9 @@ jobs:
                 id: meta
                 uses: docker/metadata-action@v5
                 with:
-
-                    # Lists Docker images to use as base name for tags.
                     images: |
                         axiston/postgres
                         ghcr.io/axiston/postgres
-
-                    # Generates Docker tags based on the following events.
                     tags: |
                         type=raw,value=latest
                         type=semver,pattern={{version}}
@@ -66,15 +62,6 @@ jobs:
 
     build:
         runs-on: ubuntu-22.04
-        services:
-            postgres:
-                image: postgres:latest
-                ports:
-                    - 5432:5432
-                env:
-                    POSTGRES_USER: usr
-                    POSTGRES_PASSWORD: pwd
-                    POSTGRES_DB: db
         steps:
             -   name: Checkout repository
                 uses: actions/checkout@v4
@@ -85,14 +72,8 @@ jobs:
                     components: clippy,rustfmt
                     toolchain: nightly
 
-            -   name: "Run Make Install: Installs the Diesel CLI"
-                run: make install
-
-            -   name: "Run Make Migrate: Runs all Postgres migrations"
-                run: make migrate
-
-            -   name: 'Run Make Generate: Generates the schema file'
-                run: make generate
+            -   name: Run Database Tasks
+                uses: ./.github/actions/migrate-generate
 
             -   name: Run Cargo:fmt
                 run: cargo +nightly fmt --all -- --check
@@ -108,15 +89,18 @@ jobs:
         runs-on: ubuntu-22.04
         if: github.event_name == 'push'
         steps:
-            -   name: Check out
-                uses: actions/checkout@v3
+            -   name: Checkout repository
+                uses: actions/checkout@v4
 
             -   name: Set up Rust
                 uses: dtolnay/rust-toolchain@master
                 with:
                     toolchain: stable
 
-            -   name: Publish
+            -   name: Run Database Tasks
+                uses: ./.github/actions/migrate
+
+            -   name: Publish to Crates.io
                 run: cargo publish --token ${CRATES_TOKEN}
                 env:
                     CRATES_TOKEN: ${{ secrets.CRATES_TOKEN }}
