@@ -1,9 +1,11 @@
 name: Migrate and Generate
 description: Sets up PostgreSQL, runs migrations, and generates code.
+
 runs:
-    using: composite
+    using: "composite"
     steps:
         -   name: Set up PostgreSQL service
+            shell: bash
             run: |
                 echo "Starting PostgreSQL..."
                 docker run -d --name postgres \
@@ -29,13 +31,18 @@ runs:
                 fi
 
         -   name: Run make:install
+            shell: bash
             run: make install
 
         -   name: Run make:migrate
+            shell: bash
             run: make migrate
 
         -   name: Run make:generate
+            shell: bash
             run: make generate
 
         -   name: Clean up PostgreSQL
+            if: always()
+            shell: bash
             run: docker stop postgres && docker rm postgres
