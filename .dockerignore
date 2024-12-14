@@ -16,5 +16,7 @@ Cargo.lock
 **/*.rs.bk
 *.pdb
 
-# Generated
-/crates/schema/schema.rs
+# Other
+crates/
+migrations/
+.github/

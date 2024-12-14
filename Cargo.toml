@@ -1,0 +1,30 @@
+# https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[workspace]
+resolver = "2"
+members = [
+    "./crates/migrate",
+    "./crates/schema",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "Axiston License 1.0"
+publish = false
+
+authors = ["Axiston <contact@axiston.com>"]
+repository = "https://github.com/axiston/axiston"
+homepage = "https://github.com/axiston/axiston"
+documentation = "https://docs.rs/axiston"
+
+[workspace.dependencies]
+tokio = { version = "1.41", features = ["rt-multi-thread", "macros", "process"] }
+tracing = { version = "0.1", features = [] }
+derive_more = { version = "1.0", features = ["from", "deref", "deref_mut"] }
+thiserror = { version = "2.0", features = [] }
+
+diesel = { version = "2.2", features = ["time", "uuid", "ipnet-address"] }
+diesel_migrations = { version = "2.2", features = ["postgres"] }
+diesel-async = { version = "0.5", features = ["postgres", "pool", "deadpool"] }
+diesel-derive-enum = { version = "2.1", features = ["postgres"] }
