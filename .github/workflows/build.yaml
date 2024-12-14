@@ -30,8 +30,7 @@ jobs:
                 uses: docker/metadata-action@v5
                 with:
                     images: |
-                        axiston/postgres
-                        ghcr.io/axiston/postgres
+                        axiston/database
                     tags: |
                         type=raw,value=latest
                         type=semver,pattern={{version}}
@@ -49,7 +48,7 @@ jobs:
                 if: github.event_name != 'pull_request'
                 uses: docker/login-action@v3
                 with:
-                    username: ${{ secrets.DOCKERHUB_USERNAME }}
+                    username: ${{ vars.DOCKERHUB_USERNAME }}
                     password: ${{ secrets.DOCKERHUB_TOKEN }}
 
             -   name: Build and push the Docker image
@@ -117,8 +116,30 @@ jobs:
                 with:
                     toolchain: stable
 
-            -   name: Run Database Tasks
+            -   name: Set up Rust cache
+                uses: Swatinem/rust-cache@v2
+                with:
+                    save-if: 'false'
+
+            -   name: Install & Run Postgres
+                uses: ikalnytskyi/action-setup-postgres@v7
+                with:
+                    username: "postgres"
+                    password: "postgres"
+                    database: "postgres"
+
+            -   name: Wait for Postgres
+                uses: ./.github/actions/wait-for-postgres
+                with:
+                    username: "postgres"
+                    timeout: "30"
+
+            -   name: Run migrations on Postgres
                 uses: ./.github/actions/migrate-and-generate
+                with:
+                    username: "postgres"
+                    password: "postgres"
+                    database: "postgres"
 
             -   name: Publish to Crates.io
                 run: cargo publish --token ${CRATES_TOKEN}
