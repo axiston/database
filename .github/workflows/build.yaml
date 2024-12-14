@@ -60,6 +60,27 @@ jobs:
                     tags: ${{ steps.meta.outputs.tags }}
                     labels: ${{ steps.meta.outputs.labels }}
 
+    test:
+        runs-on: ubuntu-22.04
+        steps:
+            -   name: Checkout repository
+                uses: actions/checkout@v4
+
+            -   name: Set up Rust
+                uses: dtolnay/rust-toolchain@master
+                with:
+                    toolchain: stable
+
+            -   name: Setup Postgres
+                uses: ikalnytskyi/action-setup-postgres@v7
+                with:
+                    username: 'postgres'
+                    password: 'postgres'
+                    database: 'postgres'
+
+            -   name: Run Cargo:test
+                run: cargo test --verbose --all-features
+
     build:
         runs-on: ubuntu-22.04
         steps:
@@ -72,17 +93,31 @@ jobs:
                     components: clippy,rustfmt
                     toolchain: nightly
 
-            -   name: Run Database Tasks
-                uses: ./.github/actions/migrate
+            -   name: Set up Postgres
+                uses: ikalnytskyi/action-setup-postgres@v7
+                with:
+                    username: 'postgres'
+                    password: 'postgres'
+                    database: 'postgres'
+
+            -   name: Wait for Postgres
+                uses: ./.github/actions/wait-for-postgres
+                with:
+                    username: 'postgres'
+                    timeout: '30'
+
+            -   name: Run migrations on Postgres
+                uses: ./.github/actions/migrate-and-generate
+                with:
+                    username: 'postgres'
+                    password: 'postgres'
+                    database: 'postgres'
 
             -   name: Run Cargo:fmt
                 run: cargo +nightly fmt --all -- --check
 
             -   name: Run Cargo:clippy
                 run: cargo clippy --all-features -- -D warnings
-
-            -   name: Run Cargo:test
-                run: cargo test --verbose --all-features
 
     publish:
         needs: build
@@ -98,7 +133,7 @@ jobs:
                     toolchain: stable
 
             -   name: Run Database Tasks
-                uses: ./.github/actions/migrate
+                uses: ./.github/actions/migrate-and-generate
 
             -   name: Publish to Crates.io
                 run: cargo publish --token ${CRATES_TOKEN}

@@ -1,9 +1,17 @@
-# Makefile for Diesel Migration and Entity Generation
+# Makefile for Diesel Migration and Entity Generation.
 # https://diesel.rs/guides/getting-started
 
-# Environment Variables
+# Environment Variables:
+POSTGRES_HOST ?= localhost
+POSTGRES_PORT ?= 5432
+POSTGRES_USERNAME ?= postgres
+POSTGRES_PASSWORD ?= postgres
+POSTGRES_DATABASE ?= postgres
 SCHEMA_OUTPUT = ./crates/schema/schema.rs
-DATABASE_URL = postgresql://usr:pwd@localhost:5432/db
+
+# Construct database address using environment variables.
+DATABASE_URL = postgresql://$(POSTGRES_USERNAME):$(POSTGRES_PASSWORD)@\
+	${POSTGRES_HOST}:${POSTGRES_PORT}/$(POSTGRES_DATABASE)
 
 all: migrate
 
