@@ -66,7 +66,7 @@ jobs:
             -   name: Checkout repository
                 uses: actions/checkout@v4
 
-            -   name: Set up Rust toolchain
+            -   name: Install Rust toolchain
                 uses: dtolnay/rust-toolchain@master
                 with:
                     components: clippy,rustfmt
@@ -75,25 +75,25 @@ jobs:
             -   name: Set up Rust cache
                 uses: Swatinem/rust-cache@v2
 
-            -   name: Set up Postgres
+            -   name: Install & Run Postgres
                 uses: ikalnytskyi/action-setup-postgres@v7
                 with:
-                    username: 'postgres'
-                    password: 'postgres'
-                    database: 'postgres'
+                    username: "postgres"
+                    password: "postgres"
+                    database: "postgres"
 
             -   name: Wait for Postgres
                 uses: ./.github/actions/wait-for-postgres
                 with:
-                    username: 'postgres'
-                    timeout: '30'
+                    username: "postgres"
+                    timeout: "30"
 
             -   name: Run migrations on Postgres
                 uses: ./.github/actions/migrate-and-generate
                 with:
-                    username: 'postgres'
-                    password: 'postgres'
-                    database: 'postgres'
+                    username: "postgres"
+                    password: "postgres"
+                    database: "postgres"
 
             -   name: Run Cargo:fmt
                 run: cargo +nightly fmt --all -- --check

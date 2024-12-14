@@ -33,4 +33,3 @@ runs:
             run: |
                 chmod +x .github/actions/wait-for-postgres/script.sh
                 .github/actions/wait-for-postgres/script.sh
-
