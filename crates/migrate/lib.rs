@@ -16,7 +16,7 @@
 //! #[tokio::main]
 //! async fn main() -> DatabaseMigratorResult<()> {
 //!     let mut x = DatabaseMigrator::new(get_connection());
-//!     x.apply_migrations().await?;
+//!     let _ = x.apply_migrations()?;
 //!     Ok(())
 //! }
 //! ```

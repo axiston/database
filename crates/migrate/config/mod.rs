@@ -28,13 +28,13 @@ impl DatabaseMigrator {
     }
 
     /// Applies all pending migrations.
-    pub async fn apply_migrations(&mut self) -> DatabaseMigratorResult<usize> {
+    pub fn apply_migrations(&mut self) -> DatabaseMigratorResult<usize> {
         let versions = self.conn.run_pending_migrations(MIGRATIONS)?;
         Ok(versions.len())
     }
 
     /// Rolls back all migrations.
-    pub async fn rollback_migrations(&mut self) -> DatabaseMigratorResult<usize> {
+    pub fn rollback_migrations(&mut self) -> DatabaseMigratorResult<usize> {
         let versions = self.conn.revert_all_migrations(MIGRATIONS)?;
         Ok(versions.len())
     }
@@ -48,28 +48,39 @@ impl fmt::Debug for DatabaseMigrator {
 
 #[cfg(test)]
 mod test {
-    use diesel_async::pooled_connection::deadpool::Object;
+    use diesel_async::pooled_connection::deadpool::Pool;
+    use diesel_async::pooled_connection::AsyncDieselConnectionManager;
     use diesel_async::AsyncPgConnection;
+    use tokio::runtime::Runtime;
 
     use crate::{DatabaseMigrator, DatabaseMigratorResult};
 
-    async fn get_connection() -> DatabaseMigratorResult<Object<AsyncPgConnection>> {
-        todo!()
+    fn get_connection_pool() -> Pool<AsyncPgConnection> {
+        let addr = "postgresql://postgres:postgres@localhost:5432/postgres";
+        let conn_manager = AsyncDieselConnectionManager::new(addr);
+        let pool = Pool::builder(conn_manager);
+        pool.build().expect("should not require runtime")
     }
 
-    #[tokio::test]
-    async fn apply_migrations() -> DatabaseMigratorResult<()> {
-        let conn = get_connection().await?;
+    #[test]
+    fn apply_migrations() -> DatabaseMigratorResult<()> {
+        let pool = get_connection_pool();
+        let rt = Runtime::new().expect("should not panic");
+        let conn = rt.block_on(async { pool.get().await.unwrap() });
+
         let mut migrator = DatabaseMigrator::new(conn);
-        migrator.apply_migrations().await?;
+        let _ = migrator.apply_migrations()?;
         Ok(())
     }
 
-    #[tokio::test]
-    async fn rollback_migrations() -> DatabaseMigratorResult<()> {
-        let conn = get_connection().await?;
+    #[test]
+    fn rollback_migrations() -> DatabaseMigratorResult<()> {
+        let pool = get_connection_pool();
+        let rt = Runtime::new().expect("should not panic");
+        let conn = rt.block_on(async { pool.get().await.unwrap() });
+
         let mut migrator = DatabaseMigrator::new(conn);
-        migrator.rollback_migrations().await?;
+        let _ = migrator.rollback_migrations()?;
         Ok(())
     }
 }
