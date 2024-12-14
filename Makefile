@@ -10,8 +10,7 @@ POSTGRES_DATABASE ?= postgres
 SCHEMA_OUTPUT = ./crates/schema/schema.rs
 
 # Construct database address using environment variables.
-DATABASE_URL = postgresql://$(POSTGRES_USERNAME):$(POSTGRES_PASSWORD)@\
-	${POSTGRES_HOST}:${POSTGRES_PORT}/$(POSTGRES_DATABASE)
+DATABASE_URL = postgresql://$(POSTGRES_USERNAME):$(POSTGRES_PASSWORD)@${POSTGRES_HOST}:${POSTGRES_PORT}/$(POSTGRES_DATABASE)
 
 all: migrate
 
