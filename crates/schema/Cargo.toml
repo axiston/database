@@ -13,6 +13,9 @@ repository = { workspace = true }
 homepage = { workspace = true }
 documentation = { workspace = true }
 
+# Include the schema.rs explicitly.
+include = ["*.rs", "*.toml", "*.lock"]
+
 [package.metadata.docs.rs]
 all-features = true
 rustdoc-args = ["--cfg", "docsrs"]

@@ -114,7 +114,7 @@ jobs:
             -   name: Set up Rust
                 uses: dtolnay/rust-toolchain@master
                 with:
-                    toolchain: stable
+                    toolchain: nightly
 
             -   name: Set up Rust cache
                 uses: Swatinem/rust-cache@v2
@@ -142,6 +142,6 @@ jobs:
                     database: "postgres"
 
             -   name: Publish to Crates.io
-                run: cargo publish --token ${CRATES_TOKEN}
+                run: cargo publish --workspace -Z package-workspace --token ${CRATES_TOKEN}
                 env:
                     CRATES_TOKEN: ${{ secrets.CRATES_TOKEN }}
