@@ -1,3 +1,5 @@
+//! TODO.
+
 use std::ops::Deref;
 
 /// Comprehensive list of all constraint violations.

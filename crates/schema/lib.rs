@@ -2,6 +2,12 @@
 #![cfg_attr(docsrs, feature(doc_cfg))]
 #![doc = include_str!("./README.md")]
 
-pub mod constraints;
-pub mod enumerations;
+use diesel_migrations::{embed_migrations, EmbeddedMigrations};
+
+pub use crate::types::{enumerations, ConstraintViolation};
+
 pub mod schema;
+mod types;
+
+/// Migration source that embeds migrations into the final binary.
+pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!("migrations");

@@ -3,8 +3,8 @@
 [workspace]
 resolver = "2"
 members = [
-    "./crates/migrate",
-    "./crates/schema",
+    ".",
+    "./crates/client",
 ]
 
 [workspace.package]
@@ -19,12 +19,50 @@ homepage = "https://github.com/axiston/axiston"
 documentation = "https://docs.rs/axiston"
 
 [workspace.dependencies]
+axiston-db-client = { version = "0.1.0", path = "./crates/client" }
+axiston-db-schema = { version = "0.1.0", path = "." }
+
 tokio = { version = "1.41", features = ["rt-multi-thread", "macros", "process"] }
+deadpool = { version = "0.12", features = ["managed", "rt_tokio_1"] }
+futures = { version = "0.3", features = [] }
 tracing = { version = "0.1", features = [] }
+
+diesel = { version = "2.2", features = ["postgres", "time", "uuid", "ipnet-address", "serde_json"] }
+diesel_migrations = { version = "2.2", features = ["postgres"] }
+diesel-async = { version = "0.5", features = ["postgres", "pool", "deadpool", "async-connection-wrapper"] }
+diesel-derive-enum = { version = "2.1", features = ["postgres"] }
+
 derive_more = { version = "1.0", features = ["from", "deref", "deref_mut"] }
 thiserror = { version = "2.0", features = [] }
+anyhow = { version = "1.0", features = ["backtrace"] }
 
-diesel = { version = "2.2", features = ["postgres", "time", "uuid", "ipnet-address"] }
-diesel_migrations = { version = "2.2", features = ["postgres"] }
-diesel-async = { version = "0.5", features = ["postgres", "pool", "deadpool"] }
-diesel-derive-enum = { version = "2.1", features = ["postgres"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = { version = "1.0", features = [] }
+uuid = { version = "1.11", features = ["serde"] }
+ipnet = { version = "2.10", features = ["serde"] }
+time = { version = "0.3", features = [] }
+
+[package]
+name = "axiston-db-schema"
+version = { workspace = true }
+edition = { workspace = true }
+license = { workspace = true }
+publish = { workspace = true }
+readme = "./crates/schema/README.md"
+
+authors = { workspace = true }
+repository = { workspace = true }
+homepage = { workspace = true }
+documentation = { workspace = true }
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
+
+[lib]
+path = "./crates/schema/lib.rs"
+
+[dependencies]
+diesel = { workspace = true }
+diesel_migrations = { workspace = true }
+diesel-derive-enum = { workspace = true }

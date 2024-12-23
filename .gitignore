@@ -17,4 +17,5 @@ Cargo.lock
 *.pdb
 
 # Generated
-/crates/schema/schema.rs
+/crates/schema.rs
+deno.jsonc
