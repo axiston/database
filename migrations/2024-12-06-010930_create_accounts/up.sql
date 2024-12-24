@@ -97,25 +97,28 @@ SELECT manage_updated_at('account_permissions');
 CREATE INDEX account_permissions_absolute_idx ON account_permissions (account_id)
     WHERE deleted_at IS NOT NULL AND nocheck_read IS TRUE AND nocheck_write IS TRUE;
 
--- Defines an enumeration for email (action) types.
-CREATE TYPE EMAIL_TYPE AS ENUM ('confirm_email', 'update_email', 'reset_password');
+-- todo: 'pending_invite' email action?
+-- Defines an enumeration for action types confirmed via email.
+CREATE TYPE EMAIL_ACTION AS ENUM ('confirm_email', 'update_email', 'reset_password');
 
 -- Creates the `account_actions` table to track email actions.
 CREATE TABLE account_actions
 (
+    -- TODO: why not composite pk?
+
     -- Unique action token per email action.
-    action_token  UUID PRIMARY KEY    DEFAULT gen_random_uuid(),
+    action_token  UUID PRIMARY KEY      DEFAULT gen_random_uuid(),
     -- Reference to the associated account.
     account_id    UUID REFERENCES accounts (id) ON DELETE CASCADE,
 
     -- Email address and action details.
-    email_address TEXT       NOT NULL,
-    action_type   EMAIL_TYPE NOT NULL,
+    email_address TEXT         NOT NULL,
+    action_type   EMAIL_ACTION NOT NULL,
 
     -- Timestamps for tracking the row's lifecycle.
-    issued_at     TIMESTAMP  NOT NULL DEFAULT current_timestamp,
-    expired_at    TIMESTAMP  NOT NULL DEFAULT current_timestamp + INTERVAL '1 day' * 7,
-    used_at       TIMESTAMP           DEFAULT NULL,
+    issued_at     TIMESTAMP    NOT NULL DEFAULT current_timestamp,
+    expired_at    TIMESTAMP    NOT NULL DEFAULT current_timestamp + INTERVAL '1 day' * 7,
+    used_at       TIMESTAMP             DEFAULT NULL,
 
     -- Constraints to ensure proper lifecycle management.
     CONSTRAINT account_actions_expired_after_issued CHECK (expired_at >= issued_at),

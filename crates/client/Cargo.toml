@@ -1,7 +1,7 @@
 # https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [package]
-name = "axiston-db-migrate"
+name = "axiston-db-client"
 version = { workspace = true }
 edition = { workspace = true }
 license = { workspace = true }
@@ -21,13 +21,23 @@ rustdoc-args = ["--cfg", "docsrs"]
 path = "lib.rs"
 
 [dependencies]
-diesel = { workspace = true }
-diesel-async = { workspace = true, features = ["async-connection-wrapper"] }
-diesel_migrations = { workspace = true }
+axiston-db-schema = { workspace = true }
 
+diesel = { workspace = true }
+diesel_migrations = { workspace = true }
+diesel-async = { workspace = true }
+
+deadpool = { workspace = true }
+futures = { workspace = true }
 tracing = { workspace = true }
 derive_more = { workspace = true }
 thiserror = { workspace = true }
+
+serde = { workspace = true }
+serde_json = { workspace = true }
+uuid = { workspace = true }
+ipnet = { workspace = true }
+time = { workspace = true }
 
 [dev-dependencies]
 tokio = { workspace = true }

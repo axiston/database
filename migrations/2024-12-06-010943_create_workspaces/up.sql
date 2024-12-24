@@ -54,8 +54,7 @@ CREATE TABLE project_members
     updated_at TIMESTAMP NOT NULL DEFAULT current_timestamp,
 
     -- Constraints to ensure proper lifecycle management.
-    CONSTRAINT project_members_updated_after_created CHECK (
-        updated_at >= created_at)
+    CONSTRAINT project_members_updated_after_created CHECK (updated_at >= created_at)
 );
 
 -- Optimizes lookup for members by account.
@@ -129,11 +128,31 @@ CREATE TABLE project_permissions
 -- Automatically updates the `updated_at` timestamp on any row's update.
 SELECT manage_updated_at('project_permissions');
 
+-- Creates `project_schedules` table to manage project schedules.
+CREATE TABLE project_schedules
+(
+    -- Unique identifier for each schedule (used as a public resource).
+    id         UUID PRIMARY KEY   DEFAULT gen_random_uuid(),
+
+    -- Timestamps for tracking the row's lifecycle.
+    created_at TIMESTAMP NOT NULL DEFAULT current_timestamp,
+    updated_at TIMESTAMP NOT NULL DEFAULT current_timestamp,
+    deleted_at TIMESTAMP          DEFAULT NULL,
+
+    -- Constraints to ensure proper lifecycle management.
+    CONSTRAINT project_schedules_updated_after_created CHECK (updated_at >= created_at),
+    CONSTRAINT project_schedules_deleted_after_created CHECK (deleted_at IS NULL OR deleted_at >= created_at),
+    CONSTRAINT project_schedules_deleted_after_updated CHECK (deleted_at IS NULL OR deleted_at >= updated_at)
+);
+
+-- Automatically updates the `updated_at` timestamp on any row's update.
+SELECT manage_updated_at('project_schedules');
+
 -- Creates `project_webhooks` table to manage project webhooks.
 CREATE TABLE project_webhooks
 (
     -- Unique identifier for each webhook (used as a public resource).
-    unq_path_seq UUID PRIMARY KEY   DEFAULT gen_random_uuid(),
+    id           UUID PRIMARY KEY   DEFAULT gen_random_uuid(),
     -- Reference to the associated project.
     project_id   UUID      NOT NULL REFERENCES projects (id) ON DELETE CASCADE,
 
@@ -151,6 +170,9 @@ CREATE TABLE project_webhooks
     CONSTRAINT project_webhooks_deleted_after_created CHECK (deleted_at IS NULL OR deleted_at >= created_at),
     CONSTRAINT project_webhooks_deleted_after_updated CHECK (deleted_at IS NULL OR deleted_at >= updated_at)
 );
+
+-- Automatically updates the `updated_at` timestamp on any row's update.
+SELECT manage_updated_at('project_webhooks');
 
 -- CREATE TABLE events
 -- (

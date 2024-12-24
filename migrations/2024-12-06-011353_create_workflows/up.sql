@@ -65,8 +65,8 @@ CREATE TABLE workflow_schedules
 -- Creates the `workflow_webhooks` table to manage workflows webhooks.
 CREATE TABLE workflow_webhooks
 (
-    -- Reference to the associated workflow (used as a public resource).
-    workflow_id UUID      NOT NULL REFERENCES workflows (id) ON DELETE CASCADE,
+    -- Reference to the associated project webhook (used as a public resource).
+    workflow_id UUID      NOT NULL REFERENCES project_webhooks (id) ON DELETE CASCADE,
     -- Unique identifier for each webhook per workflow (used as a public resource).
     webhook_id  UUID               DEFAULT gen_random_uuid(),
 
