@@ -1,3 +1,5 @@
+//! Data layer for account management.
+
 use axiston_db_schema::schema;
 use diesel::dsl::*;
 use diesel::prelude::*;
@@ -51,8 +53,7 @@ pub struct AccountUpdateInputForm<'a> {
     pub password_hash: Option<&'a str>,
 }
 
-/// - Creates the new account.
-/// - Returns the new account id.
+/// Creates the new account and returns its id.
 ///
 /// # Tables
 ///
@@ -72,7 +73,7 @@ pub async fn create_account(
     Ok(query)
 }
 
-/// - Returns the account id by its email.
+/// Returns the account id by its email.
 ///
 /// # Tables
 ///
@@ -93,7 +94,7 @@ pub async fn find_account_id_by_email(
     Ok(query)
 }
 
-/// - Returns the account by its id.
+/// Returns the account data by its id.
 ///
 /// # Tables
 ///
@@ -114,7 +115,7 @@ pub async fn view_account(
     Ok(query)
 }
 
-/// - Updates the account.
+/// Updates the account with provided update date.
 ///
 /// # Tables
 ///
@@ -135,7 +136,7 @@ pub async fn update_account(
     Ok(())
 }
 
-/// - Deletes the account by its id.
+/// Finds the account by its id and flags it as deleted.
 ///
 /// # Tables
 ///

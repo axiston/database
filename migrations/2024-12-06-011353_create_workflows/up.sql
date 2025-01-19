@@ -1,26 +1,26 @@
--- Creates the `workflows` table to manage workflows.
+-- Manage general workflow metadata.
 CREATE TABLE workflows
 (
     -- Unique identifier for each workflow (used as a public resource).
-    id           UUID PRIMARY KEY   DEFAULT gen_random_uuid(),
-    project_id   UUID REFERENCES projects (id) ON DELETE CASCADE,
+    id             UUID PRIMARY KEY   DEFAULT gen_random_uuid(),
+    workspace_id   UUID REFERENCES workspaces (id) ON DELETE CASCADE,
 
-    -- User-provided unique workflow name within each project.
-    display_name TEXT      NOT NULL DEFAULT 'Untitled',
-    -- Tags, descriptions, and other optional properties.
-    properties   JSONB     NOT NULL DEFAULT '{}'::JSONB,
+    -- User-provided unique workflow name within each workspace.
+    display_name   TEXT      NOT NULL DEFAULT 'Untitled',
+    -- User-provided workspace metadata (description, tags, etc).
+    metadata_props JSONB     NOT NULL DEFAULT '{}'::JSONB,
 
-    -- Ensures workflow name uniqueness per project.
-    CONSTRAINT workflows_unique_display_name UNIQUE (project_id, display_name),
+    -- Ensures workflow name uniqueness per workspace.
+    CONSTRAINT workflows_unique_display_name UNIQUE (workspace_id, display_name),
     -- Ensures workflow name is not empty.
     CONSTRAINT workflows_non_empty_display_name CHECK (display_name <> ''),
     -- Limits the size of the meta JSONB field.
-    CONSTRAINT workflows_properties_limit CHECK (length(properties::TEXT) <= 2048),
+    CONSTRAINT workflows_metadata_props_limit CHECK (length(metadata_props::TEXT) <= 2048),
 
     -- Deserialized, minified and serialized workflow.
-    input_graph  JSONB     NOT NULL DEFAULT '{}'::JSONB,
+    input_graph    JSONB     NOT NULL DEFAULT '{}'::JSONB,
     -- Compiler information, including version and error counts.
-    runtime_meta JSONB     NOT NULL DEFAULT '{}'::JSONB,
+    runtime_meta   JSONB     NOT NULL DEFAULT '{}'::JSONB,
 
     -- Limits the size of the input workflow graph.
     CONSTRAINT workflows_input_graph_limit CHECK (length(input_graph::TEXT) <= 4096),
@@ -28,9 +28,9 @@ CREATE TABLE workflows
     CONSTRAINT workflows_runtime_meta_limit CHECK (length(runtime_meta::TEXT) <= 2048),
 
     -- Timestamps for tracking the row's lifecycle.
-    created_at   TIMESTAMP NOT NULL DEFAULT current_timestamp,
-    updated_at   TIMESTAMP NOT NULL DEFAULT current_timestamp,
-    deleted_at   TIMESTAMP          DEFAULT NULL,
+    created_at     TIMESTAMP NOT NULL DEFAULT current_timestamp,
+    updated_at     TIMESTAMP NOT NULL DEFAULT current_timestamp,
+    deleted_at     TIMESTAMP          DEFAULT NULL,
 
     -- Constraints to ensure proper lifecycle management.
     CONSTRAINT updated_after_created CHECK (updated_at >= created_at),
@@ -40,48 +40,40 @@ CREATE TABLE workflows
 
 -- Automatically updates the `updated_at` timestamp on any row's update.
 SELECT manage_updated_at('workflows');
--- Optimizes lookup for workflows by project.
-CREATE INDEX workflows_project_idx ON workflows (project_id) WHERE deleted_at IS NULL;
+-- Optimizes lookup for workflows by workspace.
+CREATE INDEX workflows_workspace_idx ON workflows (workspace_id) WHERE deleted_at IS NULL;
 
--- Creates the `workflow_schedules` table to manage workflows schedules.
+-- Manages workflow schedules.
 CREATE TABLE workflow_schedules
 (
     -- Reference to the associated workflow (used as a public resource).
     workflow_id UUID      NOT NULL REFERENCES workflows (id) ON DELETE CASCADE,
     -- Unique identifier for each schedule per workflow (used as a public resource).
-    schedule_id UUID      NOT NULL DEFAULT gen_random_uuid(),
+    schedule_id UUID      NOT NULL REFERENCES workspace_schedules (id) ON DELETE CASCADE,
 
     -- Ensures each workflow and schedule pair is unique.
     CONSTRAINT workflow_schedules_pkey PRIMARY KEY (workflow_id, schedule_id),
 
     -- Timestamps for tracking the row's lifecycle.
-    created_at  TIMESTAMP NOT NULL DEFAULT current_timestamp,
-    deleted_at  TIMESTAMP          DEFAULT NULL,
-
-    -- Constraints to ensure proper lifecycle management.
-    CONSTRAINT workflow_schedules_deleted_after_created CHECK (deleted_at >= created_at)
+    created_at  TIMESTAMP NOT NULL DEFAULT current_timestamp
 );
 
--- Creates the `workflow_webhooks` table to manage workflows webhooks.
+-- Manages workflows webhooks.
 CREATE TABLE workflow_webhooks
 (
-    -- Reference to the associated project webhook (used as a public resource).
-    workflow_id UUID      NOT NULL REFERENCES project_webhooks (id) ON DELETE CASCADE,
+    -- Reference to the associated workspace webhook (used as a public resource).
+    workflow_id UUID      NOT NULL REFERENCES workflows (id) ON DELETE CASCADE,
     -- Unique identifier for each webhook per workflow (used as a public resource).
-    webhook_id  UUID               DEFAULT gen_random_uuid(),
+    webhook_id  UUID      NOT NULL REFERENCES workspace_webhooks (id) ON DELETE CASCADE,
 
     -- Ensures each workflow and webhook pair is unique.
     CONSTRAINT workflow_webhooks_pkey PRIMARY KEY (workflow_id, webhook_id),
 
     -- Timestamps for tracking the row's lifecycle.
-    created_at  TIMESTAMP NOT NULL DEFAULT current_timestamp,
-    deleted_at  TIMESTAMP          DEFAULT NULL,
-
-    -- Constraints to ensure proper lifecycle management.
-    CONSTRAINT workflow_webhooks_deleted_after_created CHECK (deleted_at >= created_at)
+    created_at  TIMESTAMP NOT NULL DEFAULT current_timestamp
 );
 
--- Creates the `workflow_executions` table to manage workflows executions.
+-- Manages workflows executions.
 -- `created_at` also functions as an execution start timestamp.
 -- `updated_at` also functions as an execution end timestamp.
 CREATE TABLE workflow_executions

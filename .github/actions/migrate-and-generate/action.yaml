@@ -26,32 +26,32 @@ inputs:
 runs:
     using: "composite"
     steps:
-        -   name: Run make:install
-            env:
-                POSTGRES_HOST: ${{ inputs.host }}
-                POSTGRES_PORT: ${{ inputs.port }}
-                POSTGRES_USERNAME: ${{ inputs.username }}
-                POSTGRES_PASSWORD: ${{ inputs.password }}
-                POSTGRES_DATABASE: ${{ inputs.database }}
-            shell: bash
-            run: make install
+        - name: Run make:install
+          env:
+              POSTGRES_HOST: ${{ inputs.host }}
+              POSTGRES_PORT: ${{ inputs.port }}
+              POSTGRES_USERNAME: ${{ inputs.username }}
+              POSTGRES_PASSWORD: ${{ inputs.password }}
+              POSTGRES_DATABASE: ${{ inputs.database }}
+          shell: bash
+          run: make install
 
-        -   name: Run make:migrate
-            env:
-                POSTGRES_HOST: ${{ inputs.host }}
-                POSTGRES_PORT: ${{ inputs.port }}
-                POSTGRES_USERNAME: ${{ inputs.username }}
-                POSTGRES_PASSWORD: ${{ inputs.password }}
-                POSTGRES_DATABASE: ${{ inputs.database }}
-            shell: bash
-            run: make migrate
+        - name: Run make:migrate
+          env:
+              POSTGRES_HOST: ${{ inputs.host }}
+              POSTGRES_PORT: ${{ inputs.port }}
+              POSTGRES_USERNAME: ${{ inputs.username }}
+              POSTGRES_PASSWORD: ${{ inputs.password }}
+              POSTGRES_DATABASE: ${{ inputs.database }}
+          shell: bash
+          run: make migrate
 
-        -   name: Run make:generate
-            env:
-                POSTGRES_HOST: ${{ inputs.host }}
-                POSTGRES_PORT: ${{ inputs.port }}
-                POSTGRES_USERNAME: ${{ inputs.username }}
-                POSTGRES_PASSWORD: ${{ inputs.password }}
-                POSTGRES_DATABASE: ${{ inputs.database }}
-            shell: bash
-            run: make generate
+        - name: Run make:generate
+          env:
+              POSTGRES_HOST: ${{ inputs.host }}
+              POSTGRES_PORT: ${{ inputs.port }}
+              POSTGRES_USERNAME: ${{ inputs.username }}
+              POSTGRES_PASSWORD: ${{ inputs.password }}
+              POSTGRES_DATABASE: ${{ inputs.database }}
+          shell: bash
+          run: make generate

@@ -1,3 +1,5 @@
+//! Data layer for account permissions management.
+
 use axiston_db_schema::schema;
 use diesel::dsl::*;
 use diesel::prelude::*;
@@ -45,7 +47,7 @@ pub async fn update_permissions(
     Ok(())
 }
 
-/// - Returns the account's permissions.
+/// Returns the account's permissions.
 ///
 /// # Tables
 ///
@@ -56,7 +58,7 @@ pub async fn find_permissions(
 ) -> DatabaseResult<AccountPermissionsForm> {
     use schema::account_permissions::dsl::*;
 
-    let filter_cond = account_id.eq(account_id_recv).and(deleted_at.is_not_null());
+    let filter_cond = account_id.eq(account_id_recv).and(deleted_at.is_null());
     let query = account_permissions
         .filter(filter_cond)
         .select(AccountPermissionsForm::as_select())
@@ -66,7 +68,7 @@ pub async fn find_permissions(
     Ok(query)
 }
 
-/// - Deletes the account permissions by its id.
+/// Deletes the account permissions by its id.
 ///
 /// # Tables
 ///
@@ -77,7 +79,7 @@ pub async fn delete_permissions(
 ) -> DatabaseResult<()> {
     use schema::account_permissions::dsl::*;
 
-    let filter_cond = account_id.eq(account_id_recv).and(deleted_at.is_not_null());
+    let filter_cond = account_id.eq(account_id_recv).and(deleted_at.is_null());
     let _query = update(account_permissions.filter(filter_cond))
         .set(deleted_at.eq(now))
         .execute(conn)

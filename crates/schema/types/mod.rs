@@ -1,6 +1,4 @@
-//! TODO.
+//! Contains [`constraints`] and [`enumerations`].
 
-mod constraints;
+pub mod constraints;
 pub mod enumerations;
-
-pub use crate::types::constraints::ConstraintViolation;

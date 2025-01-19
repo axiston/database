@@ -1,3 +1,5 @@
+//! Data layer for account sessions management.
+
 use axiston_db_schema::schema;
 use diesel::dsl::*;
 use diesel::prelude::*;
@@ -17,22 +19,21 @@ pub struct AccountSessionForm {
     pub user_agent: String,
 }
 
-/// - Creates the new session.
-/// - Returns the token sequence.
+/// Creates the new session and returns the token sequence.
 ///
 /// # Tables
 ///
 /// - account_sessions
 pub async fn create_session(
     conn: &mut AsyncPgConnection,
-    affected_account_id: Uuid,
+    account_id_recv: Uuid,
     session_form: AccountSessionForm,
 ) -> DatabaseResult<Uuid> {
     use schema::account_sessions::dsl::*;
 
     let query = insert_into(account_sessions)
         .values((
-            account_id.eq(affected_account_id),
+            account_id.eq(account_id_recv),
             region_id.eq(session_form.region_id),
             ip_address.eq(session_form.ip_address),
             user_agent.eq(session_form.user_agent),
@@ -44,21 +45,21 @@ pub async fn create_session(
     Ok(query)
 }
 
-/// - Returns the active session.
+/// Returns the active session.
 ///
 /// # Tables
 ///
 /// - account_sessions
 pub async fn find_active_session(
     conn: &mut AsyncPgConnection,
-    affected_account_id: Uuid,
-    affected_token_seq: Uuid,
+    account_id_recv: Uuid,
+    token_seq_recv: Uuid,
 ) -> DatabaseResult<Option<AccountSessionForm>> {
     use schema::account_sessions::dsl::*;
 
     let filter_cond = account_id
-        .eq(affected_account_id)
-        .and(token_seq.eq(affected_token_seq))
+        .eq(account_id_recv)
+        .and(token_seq.eq(token_seq_recv))
         .and(expired_at.le(now))
         .and(deleted_at.is_null());
 
@@ -72,19 +73,19 @@ pub async fn find_active_session(
     Ok(query)
 }
 
-/// - Returns all active sessions.
+/// Returns all active sessions.
 ///
 /// # Tables
 ///
 /// - account_sessions
 pub async fn view_sessions(
     conn: &mut AsyncPgConnection,
-    affected_account_id: Uuid,
+    account_id_recv: Uuid,
 ) -> DatabaseResult<Vec<AccountSessionForm>> {
     use schema::account_sessions::dsl::*;
 
     let filter_cond = account_id
-        .eq(affected_account_id)
+        .eq(account_id_recv)
         .and(expired_at.le(now))
         .and(deleted_at.is_null());
 
@@ -97,21 +98,21 @@ pub async fn view_sessions(
     Ok(query)
 }
 
-/// - Deletes a single active session.
+/// Deletes a single active session.
 ///
 /// # Tables
 ///
 /// - account_sessions
 pub async fn delete_session(
     conn: &mut AsyncPgConnection,
-    affected_account_id: Uuid,
-    affected_token_seq: Uuid,
+    account_id_recv: Uuid,
+    token_seq_recv: Uuid,
 ) -> DatabaseResult<()> {
     use schema::account_sessions::dsl::*;
 
     let filter_cond = account_id
-        .eq(affected_account_id)
-        .and(token_seq.eq(affected_token_seq))
+        .eq(account_id_recv)
+        .and(token_seq.eq(token_seq_recv))
         .and(deleted_at.is_null());
 
     let _query = update(account_sessions.filter(filter_cond))
@@ -122,20 +123,20 @@ pub async fn delete_session(
     Ok(())
 }
 
-/// - Deletes all active sessions except one.
+/// Deletes all active sessions except one.
 ///
 /// # Tables
 ///
 /// - account_sessions
 pub async fn delete_sessions(
     conn: &mut AsyncPgConnection,
-    affected_account_id: Uuid,
+    account_id_recv: Uuid,
     token_seq_exception: Uuid,
 ) -> DatabaseResult<()> {
     use schema::account_sessions::dsl::*;
 
     let filter_cond = account_id
-        .eq(affected_account_id)
+        .eq(account_id_recv)
         .and(token_seq.ne(token_seq_exception))
         .and(deleted_at.is_null());
 

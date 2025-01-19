@@ -1,4 +1,4 @@
-//! TODO.
+//! Includes a list of all constraint violations.
 
 use std::ops::Deref;
 

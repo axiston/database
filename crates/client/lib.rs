@@ -6,7 +6,7 @@
 //! ### Examples
 //!
 //! ```rust,no_run
-//! use axiston_db_connect::{DatabaseResult, Database};
+//! use axiston_db_client::{DatabaseResult, Database};
 //!
 //! #[tokio::main]
 //! async fn main() -> DatabaseResult<()> {
@@ -22,12 +22,12 @@ use diesel_async::pooled_connection::deadpool::PoolError;
 use diesel_async::pooled_connection::PoolError as PoolError2;
 
 pub use crate::config::{Database, DatabaseConfig};
-// pub use crate::query::*;
 pub use crate::migrate::DatabaseExt;
+pub use crate::query::*;
 
 mod config;
 mod migrate;
-// mod query;
+mod query;
 
 /// Type-erased [`Error`] type.
 pub type BoxError = Box<dyn std::error::Error + Send + Sync>;
@@ -44,7 +44,7 @@ pub enum DatabaseError {
     /// [`diesel_async::pooled_connection::PoolError::ConnectionError`]
     #[error("orm connection error: {0}")]
     Connection(ConnectionError),
-    /// Errors returned by [`diesel_migrations::MigrationHarness`].
+    /// Errors returned by [`DatabaseExt`] and [`diesel_migrations::MigrationHarness`].
     #[error("orm migration error: {0}")]
     Migration(BoxError),
     /// [`diesel_async::pooled_connection::PoolError::QueryError`]

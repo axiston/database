@@ -3,6 +3,7 @@
 use std::fmt;
 use std::time::Duration;
 
+use deadpool::managed::PoolConfig;
 use diesel_async::pooled_connection::RecyclingMethod;
 use diesel_async::AsyncPgConnection;
 use serde::{Deserialize, Serialize};
@@ -23,9 +24,14 @@ pub struct DatabaseConfig {
 
 impl DatabaseConfig {
     /// Creates a new [`DatabaseConfig`].
-    #[inline]
-    pub fn new() -> Self {
-        Self::default()
+    pub fn new(pool_config: PoolConfig) -> Self {
+        Self {
+            max_conn: Some(pool_config.max_size),
+            create_timeout: pool_config.timeouts.create,
+            wait_timeout: pool_config.timeouts.wait,
+            recycle_timeout: pool_config.timeouts.recycle,
+            recycling_method: None,
+        }
     }
 
     /// Overwrites the default value of [`DatabaseConfig`]`::max_conn`.
@@ -60,6 +66,13 @@ impl DatabaseConfig {
     /// Creates a new [`DatabaseConfig`] for multiple gateways.
     pub fn new_multiple_gateways() -> Self {
         Self::default().with_max_conn(8)
+    }
+}
+
+impl From<PoolConfig> for DatabaseConfig {
+    #[inline]
+    fn from(value: PoolConfig) -> Self {
+        Self::new(value)
     }
 }
 

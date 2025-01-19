@@ -1,4 +1,4 @@
--- Creates the `accounts` table to manage user account information.
+-- Manages user's account information.
 CREATE TABLE accounts
 (
     -- Unique identifier for each account (used as a public resource).
@@ -8,7 +8,7 @@ CREATE TABLE accounts
     display_name  TEXT      NOT NULL,
     -- User-provided unique email address (ignores deactivated accounts).
     email_address TEXT      NOT NULL,
-    -- Hashed version of the user-provided password.
+    -- Hashed version of the user-provided (or random for oauth) password.
     password_hash TEXT      NOT NULL,
 
     -- Constraints to prevent empty fields.
@@ -31,13 +31,16 @@ CREATE TABLE accounts
 SELECT manage_updated_at('accounts');
 
 -- Ensures unique email addresses for active accounts.
-CREATE UNIQUE INDEX accounts_unique_email_address_idx ON accounts (email_address)
-    WHERE deleted_at IS NULL;
--- Optimizes lookup for active accounts by email and password.
-CREATE INDEX accounts_local_credentials_idx ON accounts (email_address, password_hash)
+CREATE UNIQUE INDEX accounts_email_address_idx
+    ON accounts (email_address)
     WHERE deleted_at IS NULL;
 
--- Creates the `account_sessions` table to manage user sessions.
+-- Optimizes lookup for active accounts by email and password.
+CREATE INDEX accounts_credentials_idx
+    ON accounts (email_address, password_hash)
+    WHERE deleted_at IS NULL;
+
+-- Manages active user's sessions and attached metadata.
 CREATE TABLE account_sessions
 (
     -- Unique token for each session, per account.
@@ -67,10 +70,11 @@ CREATE TABLE account_sessions
 );
 
 -- Optimizes lookup for active sessions by account & token.
-CREATE INDEX account_sessions_only_active_idx ON account_sessions (account_id, token_seq)
+CREATE INDEX account_sessions_active_idx
+    ON account_sessions (account_id, token_seq)
     WHERE deleted_at IS NULL;
 
--- Creates the `account_permissions` table to track user privileges.
+-- Tracks account's read (anything) and write (anything) privileges.
 CREATE TABLE account_permissions
 (
     -- Reference to the associated account.
@@ -93,38 +97,43 @@ CREATE TABLE account_permissions
 
 -- Automatically updates the `updated_at` timestamp on any row's update.
 SELECT manage_updated_at('account_permissions');
--- Optimizes lookup for active permissions with absolute privileges.
-CREATE INDEX account_permissions_absolute_idx ON account_permissions (account_id)
-    WHERE deleted_at IS NOT NULL AND nocheck_read IS TRUE AND nocheck_write IS TRUE;
 
--- todo: 'pending_invite' email action?
+-- Optimizes lookup for active permissions by the account identifier.
+CREATE INDEX account_permissions_idx
+    ON account_permissions (account_id)
+    WHERE deleted_at IS NOT NULL;
+
 -- Defines an enumeration for action types confirmed via email.
-CREATE TYPE EMAIL_ACTION AS ENUM ('confirm_email', 'update_email', 'reset_password');
+CREATE TYPE EMAIL_ACTION AS ENUM ('confirm_email', 'reset_password');
 
--- Creates the `account_actions` table to track email actions.
-CREATE TABLE account_actions
+-- Tracks account's tokens used for (email-confirmed) actions.
+CREATE TABLE account_tokens
 (
-    -- TODO: why not composite pk?
-
     -- Unique action token per email action.
-    action_token  UUID PRIMARY KEY      DEFAULT gen_random_uuid(),
+    action_token  UUID         NOT NULL DEFAULT gen_random_uuid(),
     -- Reference to the associated account.
     account_id    UUID REFERENCES accounts (id) ON DELETE CASCADE,
 
-    -- Email address and action details.
+    -- Each token sequence must be unique per account.
+    CONSTRAINT account_tokens_pkey PRIMARY KEY (account_id, action_token),
+
+    -- Receiver's email address and action type.
     email_address TEXT         NOT NULL,
     action_type   EMAIL_ACTION NOT NULL,
+    -- TODO: Add metadata e.g. email to change to or password reset by.
+    -- TODO: Move metadata to metadata?
 
     -- Timestamps for tracking the row's lifecycle.
     issued_at     TIMESTAMP    NOT NULL DEFAULT current_timestamp,
-    expired_at    TIMESTAMP    NOT NULL DEFAULT current_timestamp + INTERVAL '1 day' * 7,
+    expired_at    TIMESTAMP    NOT NULL DEFAULT current_timestamp + INTERVAL '7 days',
     used_at       TIMESTAMP             DEFAULT NULL,
 
     -- Constraints to ensure proper lifecycle management.
-    CONSTRAINT account_actions_expired_after_issued CHECK (expired_at >= issued_at),
-    CONSTRAINT account_actions_used_after_issued CHECK (used_at IS NULL OR used_at >= issued_at)
+    CONSTRAINT account_tokens_expired_after_issued CHECK (expired_at >= issued_at),
+    CONSTRAINT account_tokens_used_after_issued CHECK (used_at IS NULL OR used_at >= issued_at)
 );
 
--- Optimizes lookup for active email tokens by account.
-CREATE INDEX account_actions_active_idx ON account_actions (account_id, action_token)
+-- Optimizes lookup for active email tokens by the account identifier.
+CREATE INDEX account_tokens_idx
+    ON account_tokens (account_id, action_token)
     WHERE used_at IS NULL;

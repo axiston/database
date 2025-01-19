@@ -1,3 +1,5 @@
+//! Data layer for account tokens management.
+
 use axiston_db_schema::enumerations::EmailTypeForm;
 use axiston_db_schema::schema;
 use diesel::dsl::*;
@@ -8,7 +10,7 @@ use uuid::Uuid;
 use crate::DatabaseResult;
 
 #[derive(Debug, Clone, Insertable)]
-#[diesel(table_name = schema::account_actions)]
+#[diesel(table_name = schema::account_tokens)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 #[must_use = "forms do nothing unless you use them"]
 pub struct AccountEmailsCreateInput<'a> {
@@ -16,20 +18,19 @@ pub struct AccountEmailsCreateInput<'a> {
     pub action_type: EmailTypeForm,
 }
 
-/// - Creates the new action token.
-/// - Returns the new action token.
+/// Creates and returns the new action token.
 ///
 /// # Tables
 ///
 /// - account_emails
-pub async fn create_email(
+pub async fn create_email_action(
     conn: &mut AsyncPgConnection,
     account_id_recv: Uuid,
     form: AccountEmailsCreateInput<'_>,
 ) -> DatabaseResult<Uuid> {
-    use schema::account_actions::dsl::*;
+    use schema::account_tokens::dsl::*;
 
-    let query = insert_into(account_actions)
+    let query = insert_into(account_tokens)
         .values((
             account_id.eq(account_id_recv),
             email_address.eq(form.email_address),
@@ -42,25 +43,24 @@ pub async fn create_email(
     Ok(query)
 }
 
-/// - Flags the action token as used.
-/// - Returns the action type of the used action.
+/// Flags the action token as used and returns the action type.
 ///
 /// # Tables
 ///
 /// - account_emails
-pub async fn use_email(
+pub async fn spend_email_action(
     conn: &mut AsyncPgConnection,
     account_id_recv: Uuid,
     action_token_recv: Uuid,
 ) -> DatabaseResult<Option<EmailTypeForm>> {
-    use schema::account_actions::dsl::*;
+    use schema::account_tokens::dsl::*;
 
     let filter_cond = account_id
         .eq(account_id_recv)
         .and(action_token.eq(action_token_recv))
         .and(used_at.is_null());
 
-    let query = update(account_actions.filter(filter_cond))
+    let query = update(account_tokens.filter(filter_cond))
         .set(used_at.eq(now))
         .returning(action_type)
         .get_result(conn)

@@ -1,183 +1,178 @@
--- Creates the `projects` table to manage project information.
-CREATE TABLE projects
+-- Manages general workspace metadata.
+CREATE TABLE workspaces
 (
-    -- Unique identifier for each project (used as a public resource).
-    id           UUID PRIMARY KEY   DEFAULT gen_random_uuid(),
+    -- Unique identifier for each workspace (used as a public resource).
+    id             UUID PRIMARY KEY   DEFAULT gen_random_uuid(),
 
-    -- User-provided project name.
-    display_name TEXT      NOT NULL DEFAULT 'Untitled',
-    -- User-provided project metadata (description, tags, etc).
-    project_meta JSONB     NOT NULL DEFAULT '{}'::JSONB,
+    -- User-provided workspace name.
+    display_name   TEXT      NOT NULL DEFAULT 'Untitled',
+    -- User-provided workspace metadata (description, tags, etc).
+    metadata_props JSONB     NOT NULL DEFAULT '{}'::JSONB,
 
-    -- Prevents the empty project name.
-    CONSTRAINT projects_non_empty_display_name CHECK (display_name <> ''),
-    -- Limits the size of the project metadata JSONB field.
-    CONSTRAINT projects_workflow_meta_limit CHECK (length(project_meta::TEXT) <= 2048),
+    -- Prevents the empty workspace name.
+    CONSTRAINT workspaces_non_empty_display_name CHECK (display_name <> ''),
+    -- Limits the size of the workspace metadata JSONB field.
+    CONSTRAINT workspaces_metadata_props_limit CHECK (length(metadata_props::TEXT) <= 2048),
 
     -- Timestamps for tracking the row's lifecycle.
-    created_at   TIMESTAMP NOT NULL DEFAULT current_timestamp,
-    updated_at   TIMESTAMP NOT NULL DEFAULT current_timestamp,
-    deleted_at   TIMESTAMP          DEFAULT NULL,
+    created_at     TIMESTAMP NOT NULL DEFAULT current_timestamp,
+    updated_at     TIMESTAMP NOT NULL DEFAULT current_timestamp,
+    deleted_at     TIMESTAMP          DEFAULT NULL,
 
     -- Constraints to ensure proper lifecycle management.
-    CONSTRAINT projects_updated_after_created CHECK (updated_at >= created_at),
-    CONSTRAINT projects_deleted_after_created CHECK (deleted_at IS NULL OR deleted_at >= created_at),
-    CONSTRAINT projects_deleted_after_updated CHECK (deleted_at IS NULL OR deleted_at >= updated_at)
+    CONSTRAINT workspaces_updated_after_created CHECK (updated_at >= created_at),
+    CONSTRAINT workspaces_deleted_after_created CHECK (deleted_at IS NULL OR deleted_at >= created_at),
+    CONSTRAINT workspaces_deleted_after_updated CHECK (deleted_at IS NULL OR deleted_at >= updated_at)
 );
 
 -- Automatically updates the `updated_at` timestamp on any row's update.
-SELECT manage_updated_at('projects');
+SELECT manage_updated_at('workspaces');
 
--- Creates `project_members` table to manage project memberships.
-CREATE TABLE project_members
+-- TODO.
+CREATE TYPE PERMISSION_ROLE AS ENUM ('owner', 'member');
+
+-- Manages workspace memberships and display order.
+CREATE TABLE workspace_members
 (
-    -- Reference to the associated project.
-    project_id UUID      NOT NULL REFERENCES projects (id) ON DELETE CASCADE,
+    -- Reference to the associated workspace.
+    workspace_id UUID            NOT NULL REFERENCES workspaces (id) ON DELETE CASCADE,
     -- Reference to the associated account.
-    account_id UUID      NOT NULL REFERENCES accounts (id) ON DELETE CASCADE,
+    account_id   UUID            NOT NULL REFERENCES accounts (id) ON DELETE CASCADE,
+    -- Permission role of the associated account.
+    account_role PERMISSION_ROLE NOT NULL DEFAULT 'member',
 
-    -- Ensures each member and project pair is unique.
-    CONSTRAINT project_members_pkey PRIMARY KEY (project_id, account_id),
+    -- Ensures each member and workspace pair is unique.
+    CONSTRAINT workspace_members_pkey PRIMARY KEY (workspace_id, account_id),
 
-    -- Flags for visibility and project priority.
-    show_order INT       NOT NULL DEFAULT 0,
-    is_pinned  BOOLEAN   NOT NULL DEFAULT FALSE,
-    is_hidden  BOOLEAN   NOT NULL DEFAULT FALSE,
+    -- Flags for visibility and workspace priority.
+    show_order   INT             NOT NULL DEFAULT 0,
+    is_pinned    BOOLEAN         NOT NULL DEFAULT FALSE,
+    is_hidden    BOOLEAN         NOT NULL DEFAULT FALSE,
 
-    -- Same as `account_id` if the user joined as project owner.
-    created_by UUID      NOT NULL REFERENCES accounts (id) ON DELETE CASCADE,
+    -- Same as `account_id` if the user joined as workspace owner.
+    created_by   UUID            NOT NULL REFERENCES accounts (id) ON DELETE CASCADE,
     -- Same as `account_id` if the user left on their own.
-    updated_by UUID      NOT NULL REFERENCES accounts (id) ON DELETE CASCADE,
+    updated_by   UUID            NOT NULL REFERENCES accounts (id) ON DELETE CASCADE,
 
     -- Timestamps for tracking member's record lifecycle.
-    created_at TIMESTAMP NOT NULL DEFAULT current_timestamp,
-    updated_at TIMESTAMP NOT NULL DEFAULT current_timestamp,
+    created_at   TIMESTAMP       NOT NULL DEFAULT current_timestamp,
+    updated_at   TIMESTAMP       NOT NULL DEFAULT current_timestamp,
 
     -- Constraints to ensure proper lifecycle management.
-    CONSTRAINT project_members_updated_after_created CHECK (updated_at >= created_at)
+    CONSTRAINT workspace_members_updated_after_created CHECK (updated_at >= created_at)
 );
 
--- Optimizes lookup for members by account.
-CREATE INDEX project_members_account_id_idx ON project_members (account_id);
--- Optimizes lookup for members by project.
-CREATE INDEX project_members_project_id_idx ON project_members (project_id);
+-- Optimizes lookup for members by the account identifier.
+CREATE INDEX workspace_members_account_id_idx
+    ON workspace_members (account_id);
+
+-- Optimizes lookup for members by the workspace identifier.
+CREATE INDEX workspace_members_workspace_id_idx
+    ON workspace_members (workspace_id);
 
 -- Automatically updates the `updated_at` timestamp on any row's update.
-SELECT manage_updated_at('project_members');
+SELECT manage_updated_at('workspace_members');
 
 -- Defines an ENUM type for invite status, with possible values:
 -- 'pending' (default), 'accepted', 'declined', and 'canceled'.
 CREATE TYPE INVITE_STATUS AS ENUM ('pending', 'accepted', 'declined', 'canceled');
 
--- Create `project_invites` table to manage project invitations.
-CREATE TABLE project_invites
+-- Manages workspace invitations.
+CREATE TABLE workspace_invites
 (
-    -- Reference to the associated project (used as a public resource).
-    project_id UUID          NOT NULL REFERENCES projects (id) ON DELETE CASCADE,
-    -- Unique identifier for each invite per project (used as a public resource).
-    invite_id  UUID          NOT NULL DEFAULT gen_random_uuid(),
+    -- Reference to the associated workspace (used as a public resource).
+    workspace_id  UUID          NOT NULL REFERENCES workspaces (id) ON DELETE CASCADE,
+    -- Unique identifier for each invite per workspace (used as a public resource).
+    invite_id     UUID          NOT NULL DEFAULT gen_random_uuid(),
     -- Reference to the associated account.
-    account_id UUID          NOT NULL REFERENCES accounts (id) ON DELETE CASCADE,
-
-    -- Ensures each project and invite pair is unique.
-    CONSTRAINT project_invites_pkey PRIMARY KEY (project_id, invite_id),
-
+    account_id    UUID          NOT NULL REFERENCES accounts (id) ON DELETE CASCADE,
     -- Current status of the invite (pending, accepted, declined, or canceled).
-    status     INVITE_STATUS NOT NULL DEFAULT 'pending',
+    invite_status INVITE_STATUS NOT NULL DEFAULT 'pending',
+
+    -- Ensures each workspace and invite pair is unique.
+    CONSTRAINT workspace_invites_pkey PRIMARY KEY (workspace_id, invite_id),
 
     -- Can't be the same as `account_id`.
-    created_by UUID          NOT NULL REFERENCES accounts (id) ON DELETE CASCADE,
+    created_by    UUID          NOT NULL REFERENCES accounts (id) ON DELETE CASCADE,
     -- Same as `account_id` if the user declined, other if canceled.
-    updated_by UUID          NOT NULL REFERENCES accounts (id) ON DELETE CASCADE,
+    updated_by    UUID          NOT NULL REFERENCES accounts (id) ON DELETE CASCADE,
 
     -- Timestamps for tracking the row's lifecycle.
-    created_at TIMESTAMP     NOT NULL DEFAULT current_timestamp,
-    updated_at TIMESTAMP     NOT NULL DEFAULT current_timestamp,
+    created_at    TIMESTAMP     NOT NULL DEFAULT current_timestamp,
+    updated_at    TIMESTAMP     NOT NULL DEFAULT current_timestamp,
 
     -- Constraints to ensure proper lifecycle management.
-    CONSTRAINT project_invites_updated_after_created CHECK (updated_at >= created_at)
+    CONSTRAINT workspace_invites_updated_after_created CHECK (updated_at >= created_at)
 );
 
 -- Automatically updates the `updated_at` timestamp on any row's update.
-SELECT manage_updated_at('project_invites');
+SELECT manage_updated_at('workspace_invites');
 
--- Optimizes lookup for invites by account.
-CREATE INDEX project_invites_account_id_idx ON project_invites (account_id);
--- Optimizes lookup for invites by project.
-CREATE INDEX project_invites_project_id_idx ON project_invites (project_id);
+ALTER TYPE EMAIL_ACTION ADD VALUE 'pending_invite';
 
--- Creates `project_permissions` table to manage project permissions.
-CREATE TABLE project_permissions
-(
-    -- Reference to the associated account.
-    account_id UUID      NOT NULL REFERENCES accounts (id) ON DELETE CASCADE,
-    -- Reference to the associated project.
-    project_id UUID      NOT NULL REFERENCES projects (id) ON DELETE CASCADE,
+-- Optimizes lookup for invites by the account identifier.
+CREATE INDEX workspace_invites_account_id_idx
+    ON workspace_invites (account_id);
 
-    CONSTRAINT project_permissions_pkey PRIMARY KEY (account_id, project_id),
+-- Optimizes lookup for invites by the workspace identifier.
+CREATE INDEX workspace_invites_workspace_id_idx
+    ON workspace_invites (workspace_id);
 
-    -- Timestamps for tracking the row's lifecycle.
-    created_at TIMESTAMP NOT NULL DEFAULT current_timestamp,
-    updated_at TIMESTAMP NOT NULL DEFAULT current_timestamp,
-
-    -- Constraints to ensure proper lifecycle management.
-    CONSTRAINT project_permissions_updated_after_created CHECK (
-        updated_at >= created_at)
-);
-
--- Automatically updates the `updated_at` timestamp on any row's update.
-SELECT manage_updated_at('project_permissions');
-
--- Creates `project_schedules` table to manage project schedules.
-CREATE TABLE project_schedules
+-- Manages workspace schedules.
+CREATE TABLE workspace_schedules
 (
     -- Unique identifier for each schedule (used as a public resource).
-    id         UUID PRIMARY KEY   DEFAULT gen_random_uuid(),
+    id             UUID PRIMARY KEY   DEFAULT gen_random_uuid(),
+    -- Reference to the associated workspace.
+    workspace_id   UUID      NOT NULL REFERENCES workspaces (id) ON DELETE CASCADE,
+    -- User-provided workspace metadata (cron, description, tags, etc).
+    metadata_props JSONB     NOT NULL DEFAULT '{}'::JSONB,
+
+    -- Limits the size of the workspace metadata JSONB field.
+    CONSTRAINT workspace_schedules_metadata_props_limit CHECK (length(metadata_props::TEXT) <= 2048),
 
     -- Timestamps for tracking the row's lifecycle.
-    created_at TIMESTAMP NOT NULL DEFAULT current_timestamp,
-    updated_at TIMESTAMP NOT NULL DEFAULT current_timestamp,
-    deleted_at TIMESTAMP          DEFAULT NULL,
+    created_at     TIMESTAMP NOT NULL DEFAULT current_timestamp,
+    updated_at     TIMESTAMP NOT NULL DEFAULT current_timestamp,
+    deleted_at     TIMESTAMP          DEFAULT NULL,
 
     -- Constraints to ensure proper lifecycle management.
-    CONSTRAINT project_schedules_updated_after_created CHECK (updated_at >= created_at),
-    CONSTRAINT project_schedules_deleted_after_created CHECK (deleted_at IS NULL OR deleted_at >= created_at),
-    CONSTRAINT project_schedules_deleted_after_updated CHECK (deleted_at IS NULL OR deleted_at >= updated_at)
+    CONSTRAINT workspace_schedules_updated_after_created CHECK (updated_at >= created_at),
+    CONSTRAINT workspace_schedules_deleted_after_created CHECK (deleted_at IS NULL OR deleted_at >= created_at),
+    CONSTRAINT workspace_schedules_deleted_after_updated CHECK (deleted_at IS NULL OR deleted_at >= updated_at)
 );
 
 -- Automatically updates the `updated_at` timestamp on any row's update.
-SELECT manage_updated_at('project_schedules');
+SELECT manage_updated_at('workspace_schedules');
 
--- Creates `project_webhooks` table to manage project webhooks.
-CREATE TABLE project_webhooks
+-- Manages workspace webhooks.
+CREATE TABLE workspace_webhooks
 (
     -- Unique identifier for each webhook (used as a public resource).
-    id           UUID PRIMARY KEY   DEFAULT gen_random_uuid(),
-    -- Reference to the associated project.
-    project_id   UUID      NOT NULL REFERENCES projects (id) ON DELETE CASCADE,
+    id             UUID PRIMARY KEY   DEFAULT gen_random_uuid(),
+    -- Reference to the associated workspace.
+    workspace_id   UUID      NOT NULL REFERENCES workspaces (id) ON DELETE CASCADE,
+    -- User-provided workspace metadata (cron, description, tags, etc).
+    metadata_props JSONB     NOT NULL DEFAULT '{}'::JSONB,
 
-    success_code INTEGER   NOT NULL DEFAULT 200,
-    failure_code INTEGER   NOT NULL DEFAULT 400,
-    wait_output  BOOL      NOT NULL DEFAULT FALSE,
+    -- Limits the size of the workspace metadata JSONB field.
+    CONSTRAINT workspace_webhooks_metadata_props_limit CHECK (length(metadata_props::TEXT) <= 2048),
 
     -- Timestamps for tracking the row's lifecycle.
-    created_at   TIMESTAMP NOT NULL DEFAULT current_timestamp,
-    updated_at   TIMESTAMP NOT NULL DEFAULT current_timestamp,
-    deleted_at   TIMESTAMP          DEFAULT NULL,
+    created_at     TIMESTAMP NOT NULL DEFAULT current_timestamp,
+    updated_at     TIMESTAMP NOT NULL DEFAULT current_timestamp,
+    deleted_at     TIMESTAMP          DEFAULT NULL,
 
     -- Constraints to ensure proper lifecycle management.
-    CONSTRAINT project_webhooks_updated_after_created CHECK (updated_at >= created_at),
-    CONSTRAINT project_webhooks_deleted_after_created CHECK (deleted_at IS NULL OR deleted_at >= created_at),
-    CONSTRAINT project_webhooks_deleted_after_updated CHECK (deleted_at IS NULL OR deleted_at >= updated_at)
+    CONSTRAINT workspace_webhooks_updated_after_created CHECK (updated_at >= created_at),
+    CONSTRAINT workspace_webhooks_deleted_after_created CHECK (deleted_at IS NULL OR deleted_at >= created_at),
+    CONSTRAINT workspace_webhooks_deleted_after_updated CHECK (deleted_at IS NULL OR deleted_at >= updated_at)
 );
 
 -- Automatically updates the `updated_at` timestamp on any row's update.
-SELECT manage_updated_at('project_webhooks');
+SELECT manage_updated_at('workspace_webhooks');
 
--- CREATE TABLE events
--- (
---     -- project_invites changes
---     -- project_members changes
---     -- project_webhooks changes
---     -- workflows changes
--- );
+
+-- success_code INTEGER   NOT NULL DEFAULT 200,
+--     failure_code INTEGER   NOT NULL DEFAULT 400,
+--     wait_output  BOOL      NOT NULL DEFAULT FALSE,
