@@ -22,7 +22,7 @@ documentation = "https://docs.rs/axiston"
 axiston-db-client = { version = "0.1.0", path = "./crates/client" }
 axiston-db-schema = { version = "0.1.0", path = "." }
 
-tokio = { version = "1.41", features = ["rt-multi-thread", "macros", "process"] }
+tokio = { version = "1.43", features = ["rt-multi-thread", "macros", "process"] }
 deadpool = { version = "0.12", features = ["managed", "rt_tokio_1"] }
 futures = { version = "0.3", features = [] }
 tracing = { version = "0.1", features = [] }
@@ -35,9 +35,10 @@ diesel-derive-enum = { version = "2.1", features = ["postgres"] }
 
 serde = { version = "1.0", features = ["derive"] }
 serde_json = { version = "1.0", features = [] }
+strum = { version = "0.26", features = ["derive"] }
 derive_more = { version = "1.0", features = ["full"] }
-uuid = { version = "1.11", features = ["serde"] }
-ipnet = { version = "2.10", features = ["serde"] }
+uuid = { version = "1.12", features = ["serde"] }
+ipnet = { version = "2.11", features = ["serde"] }
 time = { version = "0.3", features = [] }
 
 [package]
@@ -64,3 +65,4 @@ path = "./crates/schema/lib.rs"
 diesel = { workspace = true }
 diesel_migrations = { workspace = true }
 diesel-derive-enum = { workspace = true }
+strum = { workspace = true }

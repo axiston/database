@@ -78,8 +78,12 @@ impl From<PoolConfig> for DatabaseConfig {
 
 impl fmt::Debug for DatabaseConfig {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        // TODO: Implement fmt::Debug for DatabaseConfig.
-        f.debug_struct("DatabaseConfig").finish_non_exhaustive()
+        f.debug_struct("DatabaseConfig")
+            .field("max_conn", &self.max_conn)
+            .field("create_timeout", &self.create_timeout)
+            .field("wait_timeout", &self.wait_timeout)
+            .field("recycle_timeout", &self.recycle_timeout)
+            .finish_non_exhaustive()
     }
 }
 

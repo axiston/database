@@ -4,7 +4,7 @@
 
 use diesel_migrations::{embed_migrations, EmbeddedMigrations};
 
-pub use crate::types::{enumerations, constraints};
+pub use crate::types::{constraints, enumerations};
 
 pub mod schema;
 mod types;

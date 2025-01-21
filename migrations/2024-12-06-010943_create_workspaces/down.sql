@@ -12,7 +12,7 @@ DROP TYPE IF EXISTS INVITE_STATUS;
 DROP INDEX IF EXISTS workspace_members_account_id_idx;
 DROP INDEX IF EXISTS workspace_members_workspace_id_idx;
 DROP TABLE IF EXISTS workspace_members;
-DROP TYPE IF EXISTS PERMISSION_ROLE;
+DROP TYPE IF EXISTS PROJECT_ROLE;
 
 -- Drop `workspaces` table.
 DROP TABLE IF EXISTS workspaces;

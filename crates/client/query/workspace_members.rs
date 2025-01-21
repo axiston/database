@@ -1,6 +1,6 @@
 //! Data layer for workspace member management.
 
-use axiston_db_schema::enumerations::PermissionRoleForm;
+use axiston_db_schema::enumerations::ProjectRoleForm;
 use axiston_db_schema::schema;
 use diesel::dsl::*;
 use diesel::prelude::*;
@@ -45,7 +45,7 @@ pub struct WorkspaceMemberUpdateInputForm {
     pub show_order: Option<i32>,
     pub is_pinned: Option<bool>,
     pub is_hidden: Option<bool>,
-    pub account_role: Option<PermissionRoleForm>,
+    pub account_role: Option<ProjectRoleForm>,
     pub updated_by: Option<Uuid>,
 }
 

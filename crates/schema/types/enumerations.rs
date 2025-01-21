@@ -1,15 +1,17 @@
 //! Implements type-safe enumerations for database queries.
 
-/// Implements a type-safe `EmailAction` enumeration.
+/// Implements a type-safe `TokenAction` enumeration.
 #[derive(Debug, Clone, Copy, diesel_derive_enum::DbEnum)]
-#[ExistingTypePath = "crate::schema::sql_types::EmailAction"]
-pub enum EmailTypeForm {
+#[ExistingTypePath = "crate::schema::sql_types::TokenAction"]
+pub enum TokenActionForm {
     #[db_rename = "confirm_email"]
     ConfirmEmail,
     #[db_rename = "update_email"]
     UpdateEmail,
     #[db_rename = "reset_password"]
     ResetPassword,
+    #[db_rename = "pending_invite"]
+    PendingInvite,
 }
 
 /// Implements a type-safe `InviteStatus` enumeration.
@@ -26,10 +28,10 @@ pub enum InviteStatusForm {
     Canceled,
 }
 
-/// Implements a type-safe `PermissionRole` enumeration.
+/// Implements a type-safe `ProjectRole` enumeration.
 #[derive(Debug, Clone, Copy, diesel_derive_enum::DbEnum)]
-#[ExistingTypePath = "crate::schema::sql_types::PermissionRole"]
-pub enum PermissionRoleForm {
+#[ExistingTypePath = "crate::schema::sql_types::ProjectRole"]
+pub enum ProjectRoleForm {
     #[db_rename = "owner"]
     Owner,
     #[db_rename = "member"]
