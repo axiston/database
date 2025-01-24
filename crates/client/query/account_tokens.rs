@@ -22,24 +22,6 @@ pub struct AccountTokenCreateInput<'a> {
     pub user_agent: String,
 }
 
-#[derive(Debug, Clone)]
-#[must_use = "forms do nothing unless you use them"]
-pub struct AccountTokenViewInput {
-    pub account_id: Uuid,
-    pub action_token: Uuid,
-}
-
-#[derive(Debug, Clone, Queryable, Selectable)]
-#[diesel(table_name = schema::account_tokens)]
-#[diesel(check_for_backend(diesel::pg::Pg))]
-#[must_use = "forms do nothing unless you use them"]
-pub struct AccountTokenViewOutput {
-    pub action_type: TokenActionForm,
-    pub token_data: serde_json::Value,
-    pub ip_address: IpNet,
-    pub user_agent: String,
-}
-
 /// Creates and returns the new action token.
 ///
 /// # Tables
@@ -58,6 +40,24 @@ pub async fn create_action_token(
         .await?;
 
     Ok(query)
+}
+
+#[derive(Debug, Clone)]
+#[must_use = "forms do nothing unless you use them"]
+pub struct AccountTokenViewInput {
+    pub account_id: Uuid,
+    pub action_token: Uuid,
+}
+
+#[derive(Debug, Clone, Queryable, Selectable)]
+#[diesel(table_name = schema::account_tokens)]
+#[diesel(check_for_backend(diesel::pg::Pg))]
+#[must_use = "forms do nothing unless you use them"]
+pub struct AccountTokenViewOutput {
+    pub action_type: TokenActionForm,
+    pub token_data: serde_json::Value,
+    pub ip_address: IpNet,
+    pub user_agent: String,
 }
 
 /// Flags the action token as used and returns the action type.

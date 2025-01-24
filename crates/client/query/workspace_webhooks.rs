@@ -16,7 +16,7 @@ use crate::DatabaseResult;
 #[must_use = "forms do nothing unless you use them"]
 pub struct WorkspaceWebhookCreateInputForm<'a> {
     pub workspace_id: Uuid,
-    pub metadata_props: &'a Value,
+    pub metadata: &'a Value,
 }
 
 #[derive(Debug, Clone, Queryable)]
@@ -26,7 +26,7 @@ pub struct WorkspaceWebhookCreateInputForm<'a> {
 pub struct WorkspaceWebhookOutputForm {
     pub id: Uuid,
     pub workspace_id: Uuid,
-    pub metadata_props: Value,
+    pub metadata: Value,
     pub created_at: PrimitiveDateTime,
     pub updated_at: PrimitiveDateTime,
     pub deleted_at: Option<PrimitiveDateTime>,
@@ -37,7 +37,7 @@ pub struct WorkspaceWebhookOutputForm {
 #[diesel(check_for_backend(diesel::pg::Pg))]
 #[must_use = "forms do nothing unless you use them"]
 pub struct WorkspaceWebhookUpdateInputForm<'a> {
-    pub metadata_props: Option<&'a Value>,
+    pub metadata: Option<&'a Value>,
 }
 
 /// Creates a new workspace webhook.
@@ -56,7 +56,7 @@ pub async fn create_workspace_webhook(
         .returning((
             id,
             workspace_id,
-            metadata_props,
+            metadata,
             created_at,
             updated_at,
             deleted_at,

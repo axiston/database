@@ -4,8 +4,10 @@
 #[derive(Debug, Clone, Copy, diesel_derive_enum::DbEnum)]
 #[ExistingTypePath = "crate::schema::sql_types::TokenAction"]
 pub enum TokenActionForm {
-    #[db_rename = "confirm_email"]
-    ConfirmEmail,
+    #[db_rename = "activate_account"]
+    ActivateAccount,
+    #[db_rename = "deactivate_account"]
+    DeactivateAccount,
     #[db_rename = "update_email"]
     UpdateEmail,
     #[db_rename = "reset_password"]

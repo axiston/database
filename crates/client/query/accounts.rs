@@ -38,6 +38,7 @@ pub struct AccountViewOutputForm {
     pub display_name: String,
     pub email_address: String,
     pub password_hash: String,
+    pub is_activated: bool,
     pub created_at: PrimitiveDateTime,
     pub updated_at: PrimitiveDateTime,
     pub deleted_at: Option<PrimitiveDateTime>,
@@ -51,21 +52,22 @@ pub struct AccountUpdateInputForm<'a> {
     pub display_name: Option<&'a str>,
     pub email_address: Option<&'a str>,
     pub password_hash: Option<&'a str>,
+    pub is_activated: Option<bool>,
 }
 
-/// Creates the new account and returns its id.
+/// Creates the new account and returns its ID.
 ///
 /// # Tables
 ///
-/// - account
+/// - accounts
 pub async fn create_account(
     conn: &mut AsyncPgConnection,
-    account_form: &AccountCreateInputForm<'_>,
+    form: &AccountCreateInputForm<'_>,
 ) -> DatabaseResult<AccountCreateOutputForm> {
     use schema::accounts::dsl::*;
 
     let query = insert_into(accounts)
-        .values(account_form)
+        .values(form)
         .returning((id, created_at, updated_at, deleted_at))
         .get_result(conn)
         .await?;
@@ -73,39 +75,18 @@ pub async fn create_account(
     Ok(query)
 }
 
-/// Returns the account id by its email.
+/// Returns the account data by its ID.
 ///
 /// # Tables
 ///
-/// - account
-pub async fn find_account_id_by_email(
-    conn: &mut AsyncPgConnection,
-    account_id_email: &str,
-) -> DatabaseResult<Uuid> {
-    use schema::accounts::dsl::*;
-
-    let filter_cond = email_address.eq(account_id_email).and(deleted_at.is_null());
-    let query = accounts
-        .filter(filter_cond)
-        .select(id)
-        .get_result(conn)
-        .await?;
-
-    Ok(query)
-}
-
-/// Returns the account data by its id.
-///
-/// # Tables
-///
-/// - account
+/// - accounts
 pub async fn view_account(
     conn: &mut AsyncPgConnection,
-    account_id_recv: Uuid,
+    form_account_id: Uuid,
 ) -> DatabaseResult<AccountViewOutputForm> {
     use schema::accounts::dsl::*;
 
-    let filter_cond = id.eq(account_id_recv).and(deleted_at.is_null());
+    let filter_cond = id.eq(form_account_id).and(deleted_at.is_null());
     let query = accounts
         .filter(filter_cond)
         .select(AccountViewOutputForm::as_select())
@@ -119,15 +100,15 @@ pub async fn view_account(
 ///
 /// # Tables
 ///
-/// - account
+/// - accounts
 pub async fn update_account(
     conn: &mut AsyncPgConnection,
-    account_id_recv: Uuid,
+    form_account_id: Uuid,
     form: AccountUpdateInputForm<'_>,
 ) -> DatabaseResult<()> {
     use schema::accounts::dsl::*;
 
-    let filter_cond = id.eq(account_id_recv).and(deleted_at.is_null());
+    let filter_cond = id.eq(form_account_id).and(deleted_at.is_null());
     let _query = update(accounts.filter(filter_cond))
         .set(form)
         .execute(conn)
@@ -136,18 +117,18 @@ pub async fn update_account(
     Ok(())
 }
 
-/// Finds the account by its id and flags it as deleted.
+/// Finds the account by its ID and flags it as deleted.
 ///
 /// # Tables
 ///
-/// - account
+/// - accounts
 pub async fn delete_account(
     conn: &mut AsyncPgConnection,
-    account_id_recv: Uuid,
+    form_account_id: Uuid,
 ) -> DatabaseResult<()> {
     use schema::accounts::dsl::*;
 
-    let filter_cond = id.eq(account_id_recv).and(deleted_at.is_not_null());
+    let filter_cond = id.eq(form_account_id).and(deleted_at.is_null());
     let _query = update(accounts.filter(filter_cond))
         .set(deleted_at.eq(now))
         .execute(conn)

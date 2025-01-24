@@ -16,7 +16,7 @@ use crate::DatabaseResult;
 #[must_use = "forms do nothing unless you use them"]
 pub struct WorkspaceScheduleCreateInputForm<'a> {
     pub workspace_id: Uuid,
-    pub metadata_props: &'a Value,
+    pub metadata: &'a Value,
 }
 
 #[derive(Debug, Clone, Queryable)]
@@ -26,7 +26,8 @@ pub struct WorkspaceScheduleCreateInputForm<'a> {
 pub struct WorkspaceScheduleOutputForm {
     pub id: Uuid,
     pub workspace_id: Uuid,
-    pub metadata_props: Value,
+    pub update_interval: i32,
+    pub metadata: Value,
     pub created_at: PrimitiveDateTime,
     pub updated_at: PrimitiveDateTime,
     pub deleted_at: Option<PrimitiveDateTime>,
@@ -37,7 +38,7 @@ pub struct WorkspaceScheduleOutputForm {
 #[diesel(check_for_backend(diesel::pg::Pg))]
 #[must_use = "forms do nothing unless you use them"]
 pub struct WorkspaceScheduleUpdateInputForm<'a> {
-    pub metadata_props: Option<&'a Value>,
+    pub metadata: Option<&'a Value>,
 }
 
 /// Creates a new workspace schedule.
@@ -56,7 +57,8 @@ pub async fn create_workspace_schedule(
         .returning((
             id,
             workspace_id,
-            metadata_props,
+            update_interval,
+            metadata,
             created_at,
             updated_at,
             deleted_at,

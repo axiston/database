@@ -21,30 +21,32 @@ pub enum ConstraintViolation {
     AccountsDeletedAfterUpdated,
 
     #[strum(serialize = "account_sessions_region_alphanumeric")]
-    SessionsRegionAlnum,
+    AccountSessionsRegionAlnum,
     #[strum(serialize = "account_sessions_expired_after_issued")]
-    SessionsExpiredAfterIssued,
+    AccountSessionsExpiredAfterIssued,
     #[strum(serialize = "account_sessions_deleted_after_issued")]
-    SessionsDeletedAfterIssued,
+    AccountSessionsDeletedAfterIssued,
 
     #[strum(serialize = "account_permissions_updated_after_created")]
-    PermissionsUpdatedAfterCreated,
+    AccountPermissionsUpdatedAfterCreated,
     #[strum(serialize = "account_permissions_deleted_after_created")]
-    PermissionsDeletedAfterCreated,
+    AccountPermissionsDeletedAfterCreated,
     #[strum(serialize = "account_permissions_deleted_after_updated")]
-    PermissionsDeletedAfterUpdated,
+    AccountPermissionsDeletedAfterUpdated,
 
     #[strum(serialize = "account_tokens_expired_after_issued")]
-    TokensExpiredAfterIssued,
+    AccountTokensExpiredAfterIssued,
     #[strum(serialize = "account_tokens_used_after_issued")]
-    TokensUsedAfterIssued,
+    AccountTokensUsedAfterIssued,
+    #[strum(serialize = "account_tokens_expired_after_used")]
+    AccountTokensExpiredAfterUsed,
 
     #[strum(serialize = "workspaces_unique_name")]
     WorkspacesUniqueName,
     #[strum(serialize = "workspaces_non_empty_name")]
     WorkspacesNonEmptyName,
-    #[strum(serialize = "workspaces_metadata_props_limit")]
-    WorkspacesMetadataPropsLimit,
+    #[strum(serialize = "workspaces_metadata_limit")]
+    WorkspacesMetadataLimit,
     #[strum(serialize = "workspaces_updated_after_created")]
     WorkspacesUpdatedAfterCreated,
     #[strum(serialize = "workspaces_deleted_after_created")]
@@ -56,8 +58,8 @@ pub enum ConstraintViolation {
     WorkflowsUniqueName,
     #[strum(serialize = "workflows_non_empty_display_name")]
     WorkflowsNonEmptyName,
-    #[strum(serialize = "workflows_metadata_props_limit")]
-    WorkflowsMetadataPropsLimit,
+    #[strum(serialize = "workflows_metadata_limit")]
+    WorkflowsMetadataLimit,
     #[strum(serialize = "workflows_input_graph_limit")]
     WorkflowsInputGraphLimit,
     #[strum(serialize = "workflows_runtime_meta_limit")]
@@ -79,12 +81,12 @@ pub enum ConstraintViolation {
     WorkflowExecutionsOutputGraphLimit,
     #[strum(serialize = "workflow_executions_runtime_meta_limit")]
     WorkflowExecutionsRuntimeMetaLimit,
-    #[strum(serialize = "workflow_executions_updated_after_created")]
-    WorkflowExecutionsUpdatedAfterCreated,
-    #[strum(serialize = "workflow_executions_deleted_after_created")]
-    WorkflowExecutionsDeletedAfterCreated,
-    #[strum(serialize = "workflow_executions_deleted_after_updated")]
-    WorkflowExecutionsDeletedAfterUpdated,
+    #[strum(serialize = "workflow_executions_ended_after_started")]
+    WorkflowExecutionsEndedAfterStarted,
+    #[strum(serialize = "workflow_executions_deleted_after_started")]
+    WorkflowExecutionsDeletedAfterStarted,
+    #[strum(serialize = "workflow_executions_deleted_after_ended")]
+    WorkflowExecutionsDeletedAfterEnded,
 }
 
 impl ConstraintViolation {

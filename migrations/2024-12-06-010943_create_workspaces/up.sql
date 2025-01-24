@@ -1,38 +1,36 @@
--- Defines the metadata and constraints for workspaces.
+-- Workspace management with metadata tracking.
 CREATE TABLE workspaces
 (
     -- Unique identifier for each workspace, used as a public resource.
-    id             UUID PRIMARY KEY   DEFAULT gen_random_uuid(),
-
+    id           UUID PRIMARY KEY   DEFAULT gen_random_uuid(),
     -- Name of the workspace, provided by the user.
-    display_name   TEXT      NOT NULL DEFAULT 'Untitled',
+    display_name TEXT      NOT NULL DEFAULT 'Untitled',
     -- Additional workspace metadata, stored in JSON format (e.g., description, tags).
-    metadata_props JSONB     NOT NULL DEFAULT '{}'::JSONB,
+    metadata     JSONB     NOT NULL DEFAULT '{}'::JSONB,
 
     -- Ensures the workspace name is not empty.
     CONSTRAINT workspaces_non_empty_display_name CHECK (display_name <> ''),
     -- Restricts the size of the metadata field to avoid excessively large JSON data.
-    CONSTRAINT workspaces_metadata_props_limit CHECK (length(metadata_props::TEXT) <= 2048),
+    CONSTRAINT workspaces_metadata_limit CHECK (length(metadata::TEXT) <= 2048),
 
     -- Timestamps for tracking the row's lifecycle.
-    created_at     TIMESTAMP NOT NULL DEFAULT current_timestamp,
-    updated_at     TIMESTAMP NOT NULL DEFAULT current_timestamp,
-    deleted_at     TIMESTAMP          DEFAULT NULL,
+    created_at   TIMESTAMP NOT NULL DEFAULT current_timestamp,
+    updated_at   TIMESTAMP NOT NULL DEFAULT current_timestamp,
+    deleted_at   TIMESTAMP          DEFAULT NULL,
 
-    -- Constraints to ensure proper lifecycle management.
+    -- Integrity checks to maintain chronological consistency.
     CONSTRAINT workspaces_updated_after_created CHECK (updated_at >= created_at),
     CONSTRAINT workspaces_deleted_after_created CHECK (deleted_at IS NULL OR deleted_at >= created_at),
     CONSTRAINT workspaces_deleted_after_updated CHECK (deleted_at IS NULL OR deleted_at >= updated_at)
 );
 
--- Automatically updates the `updated_at` timestamp on any row's update.
+-- Automatically updates modification timestamp.
 SELECT manage_updated_at('workspaces');
 
 -- Represents the possible roles a user can have in a workspace.
--- It ensures that the roles are limited to predefined, meaningful values, improving data integrity.
 CREATE TYPE PROJECT_ROLE AS ENUM ('owner', 'member');
 
--- Manages workspace memberships and display order.
+-- Memberships and workspace permissions management.
 CREATE TABLE workspace_members
 (
     -- Reference to the workspace this membership belongs to.
@@ -52,7 +50,7 @@ CREATE TABLE workspace_members
     -- Indicates if the workspace is hidden from the user's dashboard.
     is_hidden    BOOLEAN      NOT NULL DEFAULT FALSE,
 
-    -- Tracks who created this membership record (e.g., the member or an admin).
+    -- Tracks who created this membership record.
     created_by   UUID         NOT NULL REFERENCES accounts (id) ON DELETE CASCADE,
     -- Tracks who last updated this membership record.
     updated_by   UUID         NOT NULL REFERENCES accounts (id) ON DELETE CASCADE,
@@ -61,7 +59,7 @@ CREATE TABLE workspace_members
     created_at   TIMESTAMP    NOT NULL DEFAULT current_timestamp,
     updated_at   TIMESTAMP    NOT NULL DEFAULT current_timestamp,
 
-    -- Constraints to ensure proper lifecycle management.
+    -- Integrity checks to maintain chronological consistency.
     CONSTRAINT workspace_members_updated_after_created CHECK (updated_at >= created_at)
 );
 
@@ -73,7 +71,7 @@ CREATE INDEX workspace_members_account_id_idx
 CREATE INDEX workspace_members_workspace_id_idx
     ON workspace_members (workspace_id);
 
--- Automatically updates the `updated_at` timestamp on any row's update.
+-- Automatically updates modification timestamp.
 SELECT manage_updated_at('workspace_members');
 
 -- Defines the possible statuses for workspace invitations.
@@ -83,10 +81,10 @@ CREATE TYPE INVITE_STATUS AS ENUM ('pending', 'accepted', 'declined', 'canceled'
 -- Manages invitations sent to users to join a workspace.
 CREATE TABLE workspace_invites
 (
-    -- Reference to the workspace the invitation belongs to.
-    workspace_id  UUID          NOT NULL REFERENCES workspaces (id) ON DELETE CASCADE,
     -- Unique identifier for each invitation, used as a public resource.
     invite_id     UUID          NOT NULL DEFAULT gen_random_uuid(),
+    -- Reference to the workspace the invitation belongs to.
+    workspace_id  UUID          NOT NULL REFERENCES workspaces (id) ON DELETE CASCADE,
     -- Reference to the account being invited.
     account_id    UUID          NOT NULL REFERENCES accounts (id) ON DELETE CASCADE,
     -- Current status of the invitation, defaulting to 'pending'.
@@ -104,80 +102,78 @@ CREATE TABLE workspace_invites
     created_at    TIMESTAMP     NOT NULL DEFAULT current_timestamp,
     updated_at    TIMESTAMP     NOT NULL DEFAULT current_timestamp,
 
-    -- Constraints to ensure proper lifecycle management.
+    -- Integrity checks to maintain chronological consistency.
     CONSTRAINT workspace_invites_updated_after_created CHECK (updated_at >= created_at)
 );
 
--- Automatically updates the `updated_at` timestamp on any row's update.
+-- Automatically updates modification timestamp.
 SELECT manage_updated_at('workspace_invites');
 
--- Adds a new value to the TOKEN_ACTION type to track pending invites.
+-- Adds a new value to token actions to track pending invites.
 ALTER TYPE TOKEN_ACTION ADD VALUE 'pending_invite';
 
--- Optimizes lookup for invites by the account identifier.
-CREATE INDEX workspace_invites_account_id_idx
+CREATE INDEX workspace_project_invites_account_id_idx
     ON workspace_invites (account_id);
 
--- Optimizes lookup for invites by the workspace identifier.
-CREATE INDEX workspace_invites_workspace_id_idx
+CREATE INDEX workspace_project_invites_workspace_project_id_idx
     ON workspace_invites (workspace_id);
 
 -- Manages schedules associated with workspaces.
 CREATE TABLE workspace_schedules
 (
-    -- Unique identifier for each schedule (used as a public resource).
-    id              UUID PRIMARY KEY   DEFAULT gen_random_uuid(),
+    -- Unique identifier for each schedule, used as a public resource.
+    id              UUID PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
     -- Reference to the associated workspace.
-    workspace_id    UUID      NOT NULL REFERENCES workspaces (id) ON DELETE CASCADE,
+    workspace_id    UUID             NOT NULL REFERENCES workspaces (id) ON DELETE CASCADE,
 
     -- Defines the schedule update interval (in seconds).
-    update_interval INTEGER   NOT NULL DEFAULT 3600,
+    update_interval INTEGER          NOT NULL DEFAULT 3600,
     -- User-provided workspace metadata (cron, description, tags, etc).
-    metadata_props  JSONB     NOT NULL DEFAULT '{}'::JSONB,
+    metadata        JSONB            NOT NULL DEFAULT '{}'::JSONB,
 
     -- Restricts the update interval to at least 1 second.
     CONSTRAINT workspace_schedules_update_interval_non_zero CHECK ( update_interval > 0 ),
     -- Restricts the size of the metadata field to avoid excessively large JSON data.
-    CONSTRAINT workspace_schedules_metadata_props_limit CHECK (length(metadata_props::TEXT) <= 2048),
+    CONSTRAINT workspace_schedules_metadata_limit CHECK (length(metadata::TEXT) <= 2048),
 
     -- Timestamps for tracking the row's lifecycle.
-    created_at      TIMESTAMP NOT NULL DEFAULT current_timestamp,
-    updated_at      TIMESTAMP NOT NULL DEFAULT current_timestamp,
-    deleted_at      TIMESTAMP          DEFAULT NULL,
+    created_at      TIMESTAMP        NOT NULL DEFAULT current_timestamp,
+    updated_at      TIMESTAMP        NOT NULL DEFAULT current_timestamp,
+    deleted_at      TIMESTAMP                 DEFAULT NULL,
 
-    -- Constraints to ensure proper lifecycle management.
+    -- Integrity checks to maintain chronological consistency.
     CONSTRAINT workspace_schedules_updated_after_created CHECK (updated_at >= created_at),
     CONSTRAINT workspace_schedules_deleted_after_created CHECK (deleted_at IS NULL OR deleted_at >= created_at),
     CONSTRAINT workspace_schedules_deleted_after_updated CHECK (deleted_at IS NULL OR deleted_at >= updated_at)
 );
 
--- Automatically updates the `updated_at` timestamp on any row's update.
+-- Automatically updates modification timestamp.
 SELECT manage_updated_at('workspace_schedules');
 
 -- Manages webhooks associated with workspaces.
 CREATE TABLE workspace_webhooks
 (
-    -- Unique identifier for each webhook (used as a public resource).
-    id             UUID PRIMARY KEY   DEFAULT gen_random_uuid(),
+    -- Unique identifier for each webhook, used as a public resource.
+    id           UUID PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
     -- Reference to the associated workspace.
-    workspace_id   UUID      NOT NULL REFERENCES workspaces (id) ON DELETE CASCADE,
+    workspace_id UUID             NOT NULL REFERENCES workspaces (id) ON DELETE CASCADE,
 
     -- User-provided workspace metadata (cron, description, tags, etc).
-    metadata_props JSONB     NOT NULL DEFAULT '{}'::JSONB,
+    metadata     JSONB            NOT NULL DEFAULT '{}'::JSONB,
 
     -- Restricts the size of the metadata field to avoid excessively large JSON data.
-    CONSTRAINT workspace_webhooks_metadata_props_limit CHECK (length(metadata_props::TEXT) <= 2048),
+    CONSTRAINT workspace_webhooks_metadata_limit CHECK (length(metadata::TEXT) <= 2048),
 
     -- Timestamps for tracking the row's lifecycle.
-    created_at     TIMESTAMP NOT NULL DEFAULT current_timestamp,
-    updated_at     TIMESTAMP NOT NULL DEFAULT current_timestamp,
-    deleted_at     TIMESTAMP          DEFAULT NULL,
+    created_at   TIMESTAMP        NOT NULL DEFAULT current_timestamp,
+    updated_at   TIMESTAMP        NOT NULL DEFAULT current_timestamp,
+    deleted_at   TIMESTAMP                 DEFAULT NULL,
 
-    -- Constraints to ensure proper lifecycle management.
+    -- Integrity checks to maintain chronological consistency.
     CONSTRAINT workspace_webhooks_updated_after_created CHECK (updated_at >= created_at),
     CONSTRAINT workspace_webhooks_deleted_after_created CHECK (deleted_at IS NULL OR deleted_at >= created_at),
     CONSTRAINT workspace_webhooks_deleted_after_updated CHECK (deleted_at IS NULL OR deleted_at >= updated_at)
 );
 
--- Automatically updates the `updated_at` timestamp on any row's update.
+-- Automatically updates modification timestamp.
 SELECT manage_updated_at('workspace_webhooks');

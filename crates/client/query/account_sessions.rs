@@ -26,17 +26,17 @@ pub struct AccountSessionForm {
 /// - account_sessions
 pub async fn create_session(
     conn: &mut AsyncPgConnection,
-    account_id_recv: Uuid,
-    session_form: AccountSessionForm,
+    form_account_id: Uuid,
+    form: AccountSessionForm,
 ) -> DatabaseResult<Uuid> {
     use schema::account_sessions::dsl::*;
 
     let query = insert_into(account_sessions)
         .values((
-            account_id.eq(account_id_recv),
-            region_id.eq(session_form.region_id),
-            ip_address.eq(session_form.ip_address),
-            user_agent.eq(session_form.user_agent),
+            account_id.eq(form_account_id),
+            region_id.eq(form.region_id),
+            ip_address.eq(form.ip_address),
+            user_agent.eq(form.user_agent),
         ))
         .returning(token_seq)
         .get_result(conn)
@@ -52,14 +52,14 @@ pub async fn create_session(
 /// - account_sessions
 pub async fn find_active_session(
     conn: &mut AsyncPgConnection,
-    account_id_recv: Uuid,
-    token_seq_recv: Uuid,
+    form_account_id: Uuid,
+    form_token_seq: Uuid,
 ) -> DatabaseResult<Option<AccountSessionForm>> {
     use schema::account_sessions::dsl::*;
 
     let filter_cond = account_id
-        .eq(account_id_recv)
-        .and(token_seq.eq(token_seq_recv))
+        .eq(form_account_id)
+        .and(token_seq.eq(form_token_seq))
         .and(expired_at.le(now))
         .and(deleted_at.is_null());
 
@@ -78,14 +78,14 @@ pub async fn find_active_session(
 /// # Tables
 ///
 /// - account_sessions
-pub async fn view_sessions(
+pub async fn view_active_sessions(
     conn: &mut AsyncPgConnection,
-    account_id_recv: Uuid,
+    form_account_id: Uuid,
 ) -> DatabaseResult<Vec<AccountSessionForm>> {
     use schema::account_sessions::dsl::*;
 
     let filter_cond = account_id
-        .eq(account_id_recv)
+        .eq(form_account_id)
         .and(expired_at.le(now))
         .and(deleted_at.is_null());
 
@@ -105,14 +105,14 @@ pub async fn view_sessions(
 /// - account_sessions
 pub async fn delete_session(
     conn: &mut AsyncPgConnection,
-    account_id_recv: Uuid,
-    token_seq_recv: Uuid,
+    form_account_id: Uuid,
+    form_token_seq: Uuid,
 ) -> DatabaseResult<()> {
     use schema::account_sessions::dsl::*;
 
     let filter_cond = account_id
-        .eq(account_id_recv)
-        .and(token_seq.eq(token_seq_recv))
+        .eq(form_account_id)
+        .and(token_seq.eq(form_token_seq))
         .and(deleted_at.is_null());
 
     let _query = update(account_sessions.filter(filter_cond))
@@ -130,14 +130,14 @@ pub async fn delete_session(
 /// - account_sessions
 pub async fn delete_sessions(
     conn: &mut AsyncPgConnection,
-    account_id_recv: Uuid,
-    token_seq_exception: Uuid,
+    form_account_id: Uuid,
+    form_except_token_seq: Uuid,
 ) -> DatabaseResult<()> {
     use schema::account_sessions::dsl::*;
 
     let filter_cond = account_id
-        .eq(account_id_recv)
-        .and(token_seq.ne(token_seq_exception))
+        .eq(form_account_id)
+        .and(token_seq.ne(form_except_token_seq))
         .and(deleted_at.is_null());
 
     let _query = update(account_sessions.filter(filter_cond))

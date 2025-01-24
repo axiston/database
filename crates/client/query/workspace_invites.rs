@@ -112,13 +112,13 @@ pub async fn update_workspace_invite(
 /// - workspace_invites
 pub async fn view_workspace_invite(
     conn: &mut AsyncPgConnection,
-    workspace_id_val: Uuid,
+    form_workspace_id: Uuid,
     invite_id_val: Uuid,
 ) -> DatabaseResult<WorkspaceInviteViewOutputForm> {
     use schema::workspace_invites::dsl::*;
 
     let filter_cond = workspace_id
-        .eq(workspace_id_val)
+        .eq(form_workspace_id)
         .and(invite_id.eq(invite_id_val));
     let query = workspace_invites
         .filter(filter_cond)
