@@ -27,23 +27,8 @@ pub struct WorkspaceScheduleCreateInput {
 #[diesel(table_name = schema::workspace_schedules)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 #[must_use = "forms do nothing unless you use them"]
-pub struct WorkspaceScheduleOutput {
+pub struct WorkspaceScheduleCreateOutput {
     pub id: Uuid,
-    pub workspace_id: Uuid,
-    pub update_interval: i32,
-    pub metadata: Value,
-    pub created_at: PrimitiveDateTime,
-    pub updated_at: PrimitiveDateTime,
-    pub deleted_at: Option<PrimitiveDateTime>,
-}
-
-#[derive(Debug, Clone, AsChangeset)]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[diesel(table_name = schema::workspace_schedules)]
-#[diesel(check_for_backend(diesel::pg::Pg))]
-#[must_use = "forms do nothing unless you use them"]
-pub struct WorkspaceScheduleUpdateInput {
-    pub metadata: Value,
 }
 
 /// Creates a new workspace schedule.
@@ -54,24 +39,35 @@ pub struct WorkspaceScheduleUpdateInput {
 pub async fn create_workspace_schedule(
     conn: &mut AsyncPgConnection,
     schedule_form: &WorkspaceScheduleCreateInput,
-) -> DatabaseResult<WorkspaceScheduleOutput> {
+) -> DatabaseResult<WorkspaceScheduleCreateOutput> {
     use schema::workspace_schedules::dsl::*;
 
     let query = insert_into(workspace_schedules)
         .values(schedule_form)
-        .returning((
-            id,
-            workspace_id,
-            update_interval,
-            metadata,
-            created_at,
-            updated_at,
-            deleted_at,
-        ))
+        .returning((id,))
         .get_result(conn)
         .await?;
 
     Ok(query)
+}
+
+#[derive(Debug, Clone, Queryable)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[diesel(table_name = schema::workspace_schedules)]
+#[diesel(check_for_backend(diesel::pg::Pg))]
+#[must_use = "forms do nothing unless you use them"]
+pub struct WorkspaceScheduleViewOutput {
+    pub id: Uuid,
+    pub workspace_id: Uuid,
+    pub update_interval: i32,
+    pub metadata: Value,
+
+    #[cfg_attr(feature = "serde", serde(with = "crate::serde::iso8601"))]
+    pub created_at: PrimitiveDateTime,
+    #[cfg_attr(feature = "serde", serde(with = "crate::serde::iso8601"))]
+    pub updated_at: PrimitiveDateTime,
+    #[cfg_attr(feature = "serde", serde(with = "crate::serde::iso8601::option"))]
+    pub deleted_at: Option<PrimitiveDateTime>,
 }
 
 /// Retrieves a workspace schedule by its ID.
@@ -82,7 +78,7 @@ pub async fn create_workspace_schedule(
 pub async fn view_workspace_schedule(
     conn: &mut AsyncPgConnection,
     schedule_id: Uuid,
-) -> DatabaseResult<WorkspaceScheduleOutput> {
+) -> DatabaseResult<WorkspaceScheduleViewOutput> {
     use schema::workspace_schedules::dsl::*;
 
     let filter_cond = id.eq(schedule_id).and(deleted_at.is_null());
@@ -92,6 +88,27 @@ pub async fn view_workspace_schedule(
         .await?;
 
     Ok(query)
+}
+
+/// TODO.
+///
+/// # Tables
+///
+/// - workflow_schedules
+pub async fn view_workflows_by_interval(
+    conn: &mut AsyncPgConnection,
+) -> DatabaseResult<Vec<WorkspaceScheduleViewOutput>> {
+    // TODO: Loads all workflows in the asc interval order.
+    todo!()
+}
+
+#[derive(Debug, Clone, AsChangeset)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[diesel(table_name = schema::workspace_schedules)]
+#[diesel(check_for_backend(diesel::pg::Pg))]
+#[must_use = "forms do nothing unless you use them"]
+pub struct WorkspaceScheduleUpdateInput {
+    pub metadata: Option<Value>,
 }
 
 /// Updates a workspace schedule.
@@ -115,7 +132,7 @@ pub async fn update_workspace_schedule(
     Ok(())
 }
 
-/// Marks a workspace schedule as deleted.
+/// Flags the workspace schedule as deleted.
 ///
 /// # Tables
 ///

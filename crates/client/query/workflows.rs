@@ -22,6 +22,7 @@ pub struct WorkflowCreateInput<'a> {
     pub display_name: Option<&'a str>,
     pub metadata: Option<Value>,
     pub input_graph: Option<Value>,
+    pub rt_metadata: Option<Value>,
 }
 
 #[derive(Debug, Clone, Queryable)]
@@ -31,7 +32,10 @@ pub struct WorkflowCreateInput<'a> {
 #[must_use = "forms do nothing unless you use them"]
 pub struct WorkflowCreateOutput {
     pub id: Uuid,
+
+    #[cfg_attr(feature = "serde", serde(with = "crate::serde::iso8601"))]
     pub created_at: PrimitiveDateTime,
+    #[cfg_attr(feature = "serde", serde(with = "crate::serde::iso8601"))]
     pub updated_at: PrimitiveDateTime,
 }
 
@@ -62,13 +66,30 @@ pub async fn create_workflow(
 #[must_use = "forms do nothing unless you use them"]
 pub struct WorkflowUpdateInput<'a> {
     pub display_name: Option<&'a str>,
+    pub metadata: Option<Value>,
+    pub input_graph: Option<Value>,
+    pub rt_metadata: Option<Value>,
 }
 
+/// Updates the workflow with provided data.
+///
+/// # Tables
+///
+/// - workflows
 pub async fn update_workflow(
     conn: &mut AsyncPgConnection,
+    form_workflow_id: Uuid,
     form: WorkflowUpdateInput<'_>,
 ) -> DatabaseResult<()> {
-    todo!()
+    use schema::workflows::dsl::*;
+
+    let filter_cond = id.eq(form_workflow_id).and(deleted_at.is_null());
+    let _query = update(workflows.filter(filter_cond))
+        .set(form)
+        .execute(conn)
+        .await?;
+
+    Ok(())
 }
 
 #[derive(Debug, Clone, Queryable, Selectable)]
@@ -84,12 +105,15 @@ pub struct WorkflowViewOutput {
     pub input_graph: Value,
     pub rt_metadata: Value,
 
+    #[cfg_attr(feature = "serde", serde(with = "crate::serde::iso8601"))]
     pub created_at: PrimitiveDateTime,
+    #[cfg_attr(feature = "serde", serde(with = "crate::serde::iso8601"))]
     pub updated_at: PrimitiveDateTime,
+    #[cfg_attr(feature = "serde", serde(with = "crate::serde::iso8601::option"))]
     pub deleted_at: Option<PrimitiveDateTime>,
 }
 
-/// TODO.
+/// Returns the workflow data by its ID.
 ///
 /// # Tables
 ///
@@ -111,7 +135,7 @@ pub async fn view_workflows_by_id(
     Ok(workflow)
 }
 
-/// Marks a workflow as deleted.
+/// Flags a specified workflow as deleted.
 ///
 /// # Tables
 ///

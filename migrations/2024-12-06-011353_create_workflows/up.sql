@@ -4,7 +4,7 @@ CREATE TABLE workflows
     -- Unique identifier for each workflow, used as a public resource.
     id           UUID PRIMARY KEY     DEFAULT gen_random_uuid(),
     -- Reference to the workspace that owns this workflow.
-    workspace_id UUID REFERENCES workspaces (id) ON DELETE CASCADE,
+    workspace_id UUID        NOT NULL REFERENCES workspaces (id) ON DELETE CASCADE,
     -- User-provided unique workflow name within the workspace.
     display_name TEXT        NOT NULL DEFAULT 'Untitled',
 
@@ -39,7 +39,7 @@ CREATE TABLE workflows
     CONSTRAINT deleted_after_updated CHECK (deleted_at IS NULL OR deleted_at >= updated_at)
 );
 
--- Automatically updates the `updated_at` timestamp on any row's update.
+-- Automatically updates modification timestamp.
 SELECT manage_updated_at('workflows');
 
 -- Optimizes lookup for workflows within a workspace.

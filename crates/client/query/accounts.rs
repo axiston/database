@@ -30,11 +30,11 @@ pub struct AccountCreateInput<'a> {
 pub struct AccountCreateOutput {
     pub id: Uuid,
 
-    #[serde(with = "crate::serde::iso8601")]
+    #[cfg_attr(feature = "serde", serde(with = "crate::serde::iso8601"))]
     pub created_at: PrimitiveDateTime,
-    #[serde(with = "crate::serde::iso8601")]
+    #[cfg_attr(feature = "serde", serde(with = "crate::serde::iso8601"))]
     pub updated_at: PrimitiveDateTime,
-    #[serde(with = "crate::serde::iso8601::option")]
+    #[cfg_attr(feature = "serde", serde(with = "crate::serde::iso8601::option"))]
     pub deleted_at: Option<PrimitiveDateTime>,
 }
 
@@ -110,7 +110,7 @@ pub struct AccountUpdateInput<'a> {
     pub is_activated: Option<bool>,
 }
 
-/// Updates the account with provided update data.
+/// Updates the account with provided data.
 ///
 /// # Tables
 ///
@@ -131,7 +131,7 @@ pub async fn update_account(
     Ok(())
 }
 
-/// Finds the account by its ID and flags it as deleted.
+/// Flags the account as deleted.
 ///
 /// # Tables
 ///

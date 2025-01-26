@@ -16,7 +16,9 @@ pub mod workspace_schedules;
 pub mod workspace_webhooks;
 pub mod workspaces;
 
-/// TODO.
+/// Creates a SQL `ASC` or `DESC` expressions.
+///
+/// Used to specify ordering in select/view methods.
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 pub enum QueryOrderBy {
     /// Creates a SQL `ASC` expression, representing this expression in ascending order.

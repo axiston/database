@@ -29,8 +29,12 @@ pub struct WorkspaceCreateInput<'a> {
 #[must_use = "forms do nothing unless you use them"]
 pub struct WorkspaceCreateOutput {
     pub id: Uuid,
+
+    #[cfg_attr(feature = "serde", serde(with = "crate::serde::iso8601"))]
     pub created_at: PrimitiveDateTime,
+    #[cfg_attr(feature = "serde", serde(with = "crate::serde::iso8601"))]
     pub updated_at: PrimitiveDateTime,
+    #[cfg_attr(feature = "serde", serde(with = "crate::serde::iso8601::option"))]
     pub deleted_at: Option<PrimitiveDateTime>,
 }
 
@@ -63,8 +67,12 @@ pub struct WorkspaceViewOutput {
     pub id: Uuid,
     pub display_name: String,
     pub metadata: Value,
+
+    #[cfg_attr(feature = "serde", serde(with = "crate::serde::iso8601"))]
     pub created_at: PrimitiveDateTime,
+    #[cfg_attr(feature = "serde", serde(with = "crate::serde::iso8601"))]
     pub updated_at: PrimitiveDateTime,
+    #[cfg_attr(feature = "serde", serde(with = "crate::serde::iso8601::option"))]
     pub deleted_at: Option<PrimitiveDateTime>,
 }
 

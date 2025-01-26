@@ -37,7 +37,10 @@ pub struct WorkspaceMemberOutput {
     pub is_hidden: bool,
     pub created_by: Uuid,
     pub updated_by: Uuid,
+
+    #[cfg_attr(feature = "serde", serde(with = "crate::serde::iso8601"))]
     pub created_at: PrimitiveDateTime,
+    #[cfg_attr(feature = "serde", serde(with = "crate::serde::iso8601"))]
     pub updated_at: PrimitiveDateTime,
 }
 
@@ -80,14 +83,14 @@ pub async fn create_workspace_member(
 /// - workspace_members
 pub async fn get_workspace_member(
     conn: &mut AsyncPgConnection,
-    workspace_id_recv: Uuid,
-    account_id_recv: Uuid,
+    form_workspace_id: Uuid,
+    form_account_id: Uuid,
 ) -> DatabaseResult<WorkspaceMemberOutput> {
     use schema::workspace_members::dsl::*;
 
     let filter_cond = workspace_id
-        .eq(workspace_id_recv)
-        .and(account_id.eq(account_id_recv));
+        .eq(form_workspace_id)
+        .and(account_id.eq(form_account_id));
 
     let query = workspace_members
         .filter(filter_cond)
@@ -105,15 +108,15 @@ pub async fn get_workspace_member(
 /// - workspace_members
 pub async fn update_workspace_member(
     conn: &mut AsyncPgConnection,
-    workspace_id_recv: Uuid,
-    account_id_recv: Uuid,
+    form_workspace_id: Uuid,
+    form_account_id: Uuid,
     form: WorkspaceMemberUpdateInput,
 ) -> DatabaseResult<()> {
     use schema::workspace_members::dsl::*;
 
     let filter_cond = workspace_id
-        .eq(workspace_id_recv)
-        .and(account_id.eq(account_id_recv));
+        .eq(form_workspace_id)
+        .and(account_id.eq(form_account_id));
 
     let _query = update(workspace_members.filter(filter_cond))
         .set(form)
@@ -123,21 +126,21 @@ pub async fn update_workspace_member(
     Ok(())
 }
 
-/// Removes a member from a workspace.
+/// Deletes a member from a workspace.
 ///
 /// # Tables
 ///
 /// - workspace_members
 pub async fn remove_workspace_member(
     conn: &mut AsyncPgConnection,
-    workspace_id_recv: Uuid,
-    account_id_recv: Uuid,
+    form_workspace_id: Uuid,
+    form_account_id: Uuid,
 ) -> DatabaseResult<()> {
     use schema::workspace_members::dsl::*;
 
     let filter_cond = workspace_id
-        .eq(workspace_id_recv)
-        .and(account_id.eq(account_id_recv));
+        .eq(form_workspace_id)
+        .and(account_id.eq(form_account_id));
 
     let _query = delete(workspace_members.filter(filter_cond))
         .execute(conn)

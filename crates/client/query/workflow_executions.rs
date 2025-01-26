@@ -38,7 +38,7 @@ pub struct WorkflowExecutionCreateOutput {
     pub execution_id: Uuid,
 }
 
-/// TODO.
+/// Creates the new workflow execution and returns its ID.
 ///
 /// # Tables
 ///
@@ -72,9 +72,9 @@ pub struct WorkflowExecutionListInput {
     pub sort_order: QueryOrderBy,
 }
 
-/// TODO.
 #[derive(Debug, Clone)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[must_use = "forms do nothing unless you use them"]
 pub enum WorkflowsSortBy {
     StartedAt,
     EndedAt,
@@ -90,7 +90,7 @@ pub struct WorkflowExecutionListOutput {
     pub workflow_id: Uuid,
 }
 
-/// TODO.
+/// Returns a set of workflow executions IDs.
 ///
 /// # Tables
 ///
@@ -157,7 +157,7 @@ pub struct WorkflowExecutionViewOutput {
     pub ended_at: PrimitiveDateTime,
 }
 
-/// TODO.
+/// Returns the details of the specified workflow execution.
 ///
 /// # Tables
 ///

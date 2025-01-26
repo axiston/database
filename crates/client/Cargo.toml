@@ -22,6 +22,8 @@ path = "lib.rs"
 
 [features]
 default = ["serde"]
+
+# Enables (de)serialization for all objects.
 serde = []
 
 [dependencies]

@@ -117,7 +117,7 @@ pub async fn update_workspace_webhook(
     Ok(())
 }
 
-/// Flags a workspace webhook as deleted.
+/// Flags the workspace webhook as deleted.
 ///
 /// # Tables
 ///
