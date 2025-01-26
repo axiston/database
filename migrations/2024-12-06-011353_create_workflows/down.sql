@@ -1,11 +1,11 @@
--- Drop `workflow_executions` table.
+-- Drops workflow executions and associated objects.
 DROP TABLE IF EXISTS workflow_executions;
 
--- Drop `workflow_webhooks` table.
+-- Drops workflow webhooks and associated objects.
 DROP TABLE IF EXISTS workflow_webhooks;
 
--- Drop `workflow_schedules` table.
+-- Drops workflow schedules and associated objects.
 DROP TABLE IF EXISTS workflow_schedules;
 
--- Drop `workflows` table.
+-- Drops workflows and associated objects.
 DROP TABLE IF EXISTS workflows;

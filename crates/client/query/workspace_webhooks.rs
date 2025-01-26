@@ -4,6 +4,8 @@ use axiston_db_schema::schema;
 use diesel::dsl::*;
 use diesel::prelude::*;
 use diesel_async::{AsyncPgConnection, RunQueryDsl};
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use time::PrimitiveDateTime;
 use uuid::Uuid;
@@ -11,33 +13,31 @@ use uuid::Uuid;
 use crate::DatabaseResult;
 
 #[derive(Debug, Clone, Insertable)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[diesel(table_name = schema::workspace_webhooks)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 #[must_use = "forms do nothing unless you use them"]
-pub struct WorkspaceWebhookCreateInputForm<'a> {
+pub struct WorkspaceWebhookCreateInput {
     pub workspace_id: Uuid,
-    pub metadata: &'a Value,
+    pub metadata: Value,
 }
 
 #[derive(Debug, Clone, Queryable)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[diesel(table_name = schema::workspace_webhooks)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 #[must_use = "forms do nothing unless you use them"]
-pub struct WorkspaceWebhookOutputForm {
+pub struct WorkspaceWebhookCreateOutput {
     pub id: Uuid,
     pub workspace_id: Uuid,
     pub metadata: Value,
-    pub created_at: PrimitiveDateTime,
-    pub updated_at: PrimitiveDateTime,
-    pub deleted_at: Option<PrimitiveDateTime>,
-}
 
-#[derive(Debug, Clone, AsChangeset)]
-#[diesel(table_name = schema::workspace_webhooks)]
-#[diesel(check_for_backend(diesel::pg::Pg))]
-#[must_use = "forms do nothing unless you use them"]
-pub struct WorkspaceWebhookUpdateInputForm<'a> {
-    pub metadata: Option<&'a Value>,
+    #[cfg_attr(feature = "serde", serde(with = "crate::serde::iso8601"))]
+    pub created_at: PrimitiveDateTime,
+    #[cfg_attr(feature = "serde", serde(with = "crate::serde::iso8601"))]
+    pub updated_at: PrimitiveDateTime,
+    #[cfg_attr(feature = "serde", serde(with = "crate::serde::iso8601::option"))]
+    pub deleted_at: Option<PrimitiveDateTime>,
 }
 
 /// Creates a new workspace webhook.
@@ -47,12 +47,12 @@ pub struct WorkspaceWebhookUpdateInputForm<'a> {
 ///  - workspace_webhooks
 pub async fn create_workspace_webhook(
     conn: &mut AsyncPgConnection,
-    webhook_form: &WorkspaceWebhookCreateInputForm<'_>,
-) -> DatabaseResult<WorkspaceWebhookOutputForm> {
+    form: &WorkspaceWebhookCreateInput,
+) -> DatabaseResult<WorkspaceWebhookCreateOutput> {
     use schema::workspace_webhooks::dsl::*;
 
     let query = insert_into(workspace_webhooks)
-        .values(webhook_form)
+        .values(form)
         .returning((
             id,
             workspace_id,
@@ -75,7 +75,7 @@ pub async fn create_workspace_webhook(
 pub async fn view_workspace_webhook(
     conn: &mut AsyncPgConnection,
     webhook_id: Uuid,
-) -> DatabaseResult<WorkspaceWebhookOutputForm> {
+) -> DatabaseResult<WorkspaceWebhookCreateOutput> {
     use schema::workspace_webhooks::dsl::*;
 
     let filter_cond = id.eq(webhook_id).and(deleted_at.is_null());
@@ -87,6 +87,15 @@ pub async fn view_workspace_webhook(
     Ok(query)
 }
 
+#[derive(Debug, Clone, AsChangeset)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[diesel(table_name = schema::workspace_webhooks)]
+#[diesel(check_for_backend(diesel::pg::Pg))]
+#[must_use = "forms do nothing unless you use them"]
+pub struct WorkspaceWebhookUpdateInput {
+    pub metadata: Option<Value>,
+}
+
 /// Updates a workspace webhook.
 ///
 /// # Tables
@@ -95,7 +104,7 @@ pub async fn view_workspace_webhook(
 pub async fn update_workspace_webhook(
     conn: &mut AsyncPgConnection,
     webhook_id: Uuid,
-    form: WorkspaceWebhookUpdateInputForm<'_>,
+    form: WorkspaceWebhookUpdateInput,
 ) -> DatabaseResult<()> {
     use schema::workspace_webhooks::dsl::*;
 
@@ -108,7 +117,7 @@ pub async fn update_workspace_webhook(
     Ok(())
 }
 
-/// Marks a workspace webhook as deleted.
+/// Flags a workspace webhook as deleted.
 ///
 /// # Tables
 ///

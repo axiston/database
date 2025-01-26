@@ -1,5 +1,9 @@
+//! Additional [`serde::Serializer`]s and [`serde::Deserializer`]s.
+
 pub mod iso8601 {
-    use serde::{Deserialize, Deserializer, Serializer};
+    //! [`time::serde::iso8601`] for [`PrimitiveDateTime`].
+
+    use serde::{Deserializer, Serializer};
     use time::PrimitiveDateTime;
 
     pub fn serialize<S>(datetime: &PrimitiveDateTime, serializer: S) -> Result<S::Ok, S::Error>
@@ -19,7 +23,9 @@ pub mod iso8601 {
     }
 
     pub mod option {
-        use serde::{Deserialize, Deserializer, Serializer};
+        //! [`time::serde::iso8601::option`] for [`PrimitiveDateTime`].
+
+        use serde::{Deserializer, Serializer};
         use time::PrimitiveDateTime;
 
         pub fn serialize<S>(

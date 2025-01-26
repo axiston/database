@@ -4,55 +4,38 @@ use axiston_db_schema::schema;
 use diesel::dsl::*;
 use diesel::prelude::*;
 use diesel_async::{AsyncPgConnection, RunQueryDsl};
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
 use time::PrimitiveDateTime;
 use uuid::Uuid;
 
 use crate::DatabaseResult;
 
 #[derive(Debug, Clone, Insertable)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[diesel(table_name = schema::accounts)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 #[must_use = "forms do nothing unless you use them"]
-pub struct AccountCreateInputForm<'a> {
+pub struct AccountCreateInput<'a> {
     pub display_name: &'a str,
     pub email_address: &'a str,
     pub password_hash: &'a str,
 }
 
 #[derive(Debug, Clone, Queryable)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[diesel(table_name = schema::accounts)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 #[must_use = "forms do nothing unless you use them"]
-pub struct AccountCreateOutputForm {
+pub struct AccountCreateOutput {
     pub id: Uuid,
-    pub created_at: PrimitiveDateTime,
-    pub updated_at: PrimitiveDateTime,
-    pub deleted_at: Option<PrimitiveDateTime>,
-}
 
-#[derive(Debug, Clone, Queryable, Selectable)]
-#[diesel(table_name = schema::accounts)]
-#[diesel(check_for_backend(diesel::pg::Pg))]
-#[must_use = "forms do nothing unless you use them"]
-pub struct AccountViewOutputForm {
-    pub display_name: String,
-    pub email_address: String,
-    pub password_hash: String,
-    pub is_activated: bool,
+    #[serde(with = "crate::serde::iso8601")]
     pub created_at: PrimitiveDateTime,
+    #[serde(with = "crate::serde::iso8601")]
     pub updated_at: PrimitiveDateTime,
+    #[serde(with = "crate::serde::iso8601::option")]
     pub deleted_at: Option<PrimitiveDateTime>,
-}
-
-#[derive(Debug, Clone, AsChangeset)]
-#[diesel(table_name = schema::accounts)]
-#[diesel(check_for_backend(diesel::pg::Pg))]
-#[must_use = "forms do nothing unless you use them"]
-pub struct AccountUpdateInputForm<'a> {
-    pub display_name: Option<&'a str>,
-    pub email_address: Option<&'a str>,
-    pub password_hash: Option<&'a str>,
-    pub is_activated: Option<bool>,
 }
 
 /// Creates the new account and returns its ID.
@@ -62,8 +45,8 @@ pub struct AccountUpdateInputForm<'a> {
 /// - accounts
 pub async fn create_account(
     conn: &mut AsyncPgConnection,
-    form: &AccountCreateInputForm<'_>,
-) -> DatabaseResult<AccountCreateOutputForm> {
+    form: &AccountCreateInput<'_>,
+) -> DatabaseResult<AccountCreateOutput> {
     use schema::accounts::dsl::*;
 
     let query = insert_into(accounts)
@@ -75,6 +58,25 @@ pub async fn create_account(
     Ok(query)
 }
 
+#[derive(Debug, Clone, Queryable, Selectable)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[diesel(table_name = schema::accounts)]
+#[diesel(check_for_backend(diesel::pg::Pg))]
+#[must_use = "forms do nothing unless you use them"]
+pub struct AccountViewOutput {
+    pub display_name: String,
+    pub email_address: String,
+    pub password_hash: String,
+    pub is_activated: bool,
+
+    #[cfg_attr(feature = "serde", serde(with = "crate::serde::iso8601"))]
+    pub created_at: PrimitiveDateTime,
+    #[cfg_attr(feature = "serde", serde(with = "crate::serde::iso8601"))]
+    pub updated_at: PrimitiveDateTime,
+    #[cfg_attr(feature = "serde", serde(with = "crate::serde::iso8601::option"))]
+    pub deleted_at: Option<PrimitiveDateTime>,
+}
+
 /// Returns the account data by its ID.
 ///
 /// # Tables
@@ -83,20 +85,32 @@ pub async fn create_account(
 pub async fn view_account(
     conn: &mut AsyncPgConnection,
     form_account_id: Uuid,
-) -> DatabaseResult<AccountViewOutputForm> {
+) -> DatabaseResult<AccountViewOutput> {
     use schema::accounts::dsl::*;
 
     let filter_cond = id.eq(form_account_id).and(deleted_at.is_null());
     let query = accounts
         .filter(filter_cond)
-        .select(AccountViewOutputForm::as_select())
+        .select(AccountViewOutput::as_select())
         .get_result(conn)
         .await?;
 
     Ok(query)
 }
 
-/// Updates the account with provided update date.
+#[derive(Debug, Clone, AsChangeset)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[diesel(table_name = schema::accounts)]
+#[diesel(check_for_backend(diesel::pg::Pg))]
+#[must_use = "forms do nothing unless you use them"]
+pub struct AccountUpdateInput<'a> {
+    pub display_name: Option<&'a str>,
+    pub email_address: Option<&'a str>,
+    pub password_hash: Option<&'a str>,
+    pub is_activated: Option<bool>,
+}
+
+/// Updates the account with provided update data.
 ///
 /// # Tables
 ///
@@ -104,7 +118,7 @@ pub async fn view_account(
 pub async fn update_account(
     conn: &mut AsyncPgConnection,
     form_account_id: Uuid,
-    form: AccountUpdateInputForm<'_>,
+    form: AccountUpdateInput<'_>,
 ) -> DatabaseResult<()> {
     use schema::accounts::dsl::*;
 

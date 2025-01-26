@@ -4,21 +4,26 @@ use axiston_db_schema::schema;
 use diesel::dsl::*;
 use diesel::prelude::*;
 use diesel_async::{AsyncPgConnection, RunQueryDsl};
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use time::PrimitiveDateTime;
 use uuid::Uuid;
 
 use crate::DatabaseResult;
 
 #[derive(Debug, Clone, Insertable)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[diesel(table_name = schema::workspaces)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 #[must_use = "forms do nothing unless you use them"]
 pub struct WorkspaceCreateInput<'a> {
     pub display_name: &'a str,
-    pub metadata: &'a serde_json::Value,
+    pub metadata: Value,
 }
 
 #[derive(Debug, Clone, Queryable)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[diesel(table_name = schema::workspaces)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 #[must_use = "forms do nothing unless you use them"]
@@ -27,28 +32,6 @@ pub struct WorkspaceCreateOutput {
     pub created_at: PrimitiveDateTime,
     pub updated_at: PrimitiveDateTime,
     pub deleted_at: Option<PrimitiveDateTime>,
-}
-
-#[derive(Debug, Clone, Queryable, Selectable)]
-#[diesel(table_name = schema::workspaces)]
-#[diesel(check_for_backend(diesel::pg::Pg))]
-#[must_use = "forms do nothing unless you use them"]
-pub struct WorkspaceViewOutput {
-    pub id: Uuid,
-    pub display_name: String,
-    pub metadata: serde_json::Value,
-    pub created_at: PrimitiveDateTime,
-    pub updated_at: PrimitiveDateTime,
-    pub deleted_at: Option<PrimitiveDateTime>,
-}
-
-#[derive(Debug, Clone, AsChangeset)]
-#[diesel(table_name = schema::workspaces)]
-#[diesel(check_for_backend(diesel::pg::Pg))]
-#[must_use = "forms do nothing unless you use them"]
-pub struct WorkspaceUpdateInput<'a> {
-    pub display_name: Option<&'a str>,
-    pub metadata: Option<&'a serde_json::Value>,
 }
 
 /// Creates a new workspace and returns its details.
@@ -71,6 +54,20 @@ pub async fn create_workspace(
     Ok(query)
 }
 
+#[derive(Debug, Clone, Queryable, Selectable)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[diesel(table_name = schema::workspaces)]
+#[diesel(check_for_backend(diesel::pg::Pg))]
+#[must_use = "forms do nothing unless you use them"]
+pub struct WorkspaceViewOutput {
+    pub id: Uuid,
+    pub display_name: String,
+    pub metadata: Value,
+    pub created_at: PrimitiveDateTime,
+    pub updated_at: PrimitiveDateTime,
+    pub deleted_at: Option<PrimitiveDateTime>,
+}
+
 /// Retrieves a workspace by its unique ID.
 ///
 /// # Tables
@@ -91,6 +88,16 @@ pub async fn view_workspace(
         .await?;
 
     Ok(query)
+}
+
+#[derive(Debug, Clone, AsChangeset)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[diesel(table_name = schema::workspaces)]
+#[diesel(check_for_backend(diesel::pg::Pg))]
+#[must_use = "forms do nothing unless you use them"]
+pub struct WorkspaceUpdateInput<'a> {
+    pub display_name: Option<&'a str>,
+    pub metadata: Value,
 }
 
 /// Updates a workspace's details.

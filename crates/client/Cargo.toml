@@ -20,6 +20,10 @@ rustdoc-args = ["--cfg", "docsrs"]
 [lib]
 path = "lib.rs"
 
+[features]
+default = ["serde"]
+serde = []
+
 [dependencies]
 axiston-db-schema = { workspace = true }
 

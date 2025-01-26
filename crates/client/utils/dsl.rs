@@ -1,3 +1,5 @@
+//! Additional SQL definitions and utilities.
+
 use diesel::define_sql_function;
 use diesel::sql_types::Timestamptz;
 

@@ -4,15 +4,18 @@ use axiston_db_schema::schema;
 use diesel::dsl::*;
 use diesel::prelude::*;
 use diesel_async::{AsyncPgConnection, RunQueryDsl};
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 use crate::DatabaseResult;
 
 #[derive(Debug, Clone, Insertable, Queryable, Selectable)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[diesel(table_name = schema::account_permissions)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 #[must_use = "forms do nothing unless you use them"]
-pub struct AccountPermissionsForm {
+pub struct AccountPermissions {
     pub read_accounts: bool,
     pub write_accounts: bool,
 
@@ -31,7 +34,7 @@ pub struct AccountPermissionsForm {
 pub async fn update_permissions(
     conn: &mut AsyncPgConnection,
     form_account_id: Uuid,
-    form: AccountPermissionsForm,
+    form: AccountPermissions,
 ) -> DatabaseResult<()> {
     use schema::account_permissions::dsl::*;
 
@@ -69,13 +72,13 @@ pub async fn update_permissions(
 pub async fn find_permissions(
     conn: &mut AsyncPgConnection,
     form_account_id: Uuid,
-) -> DatabaseResult<AccountPermissionsForm> {
+) -> DatabaseResult<AccountPermissions> {
     use schema::account_permissions::dsl::*;
 
     let filter_cond = account_id.eq(form_account_id);
     let query = account_permissions
         .filter(filter_cond)
-        .select(AccountPermissionsForm::as_select())
+        .select(AccountPermissions::as_select())
         .get_result(conn)
         .await?;
 

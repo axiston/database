@@ -1,45 +1,50 @@
 //! Data layer for workspace invitations.
 
-use axiston_db_schema::enumerations::InviteStatusForm;
+use axiston_db_schema::enumerations::InviteStatus;
 use axiston_db_schema::schema;
 use diesel::dsl::*;
 use diesel::prelude::*;
 use diesel_async::{AsyncPgConnection, RunQueryDsl};
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
 use time::PrimitiveDateTime;
 use uuid::Uuid;
 
 use crate::DatabaseResult;
 
 #[derive(Debug, Clone, Insertable)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[diesel(table_name = schema::workspace_invites)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 #[must_use = "forms do nothing unless you use them"]
-pub struct WorkspaceInviteCreateInputForm {
+pub struct WorkspaceInviteCreateInput {
     pub workspace_id: Uuid,
     pub account_id: Uuid,
     pub created_by: Uuid,
 }
 
 #[derive(Debug, Clone, Queryable)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[diesel(table_name = schema::workspace_invites)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 #[must_use = "forms do nothing unless you use them"]
-pub struct WorkspaceInviteCreateOutputForm {
+pub struct WorkspaceInviteCreateOutput {
     pub workspace_id: Uuid,
     pub invite_id: Uuid,
-    pub status: InviteStatusForm,
+    pub status: InviteStatus,
     pub created_at: PrimitiveDateTime,
     pub updated_at: PrimitiveDateTime,
 }
 
 #[derive(Debug, Clone, Queryable, Selectable)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[diesel(table_name = schema::workspace_invites)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 #[must_use = "forms do nothing unless you use them"]
-pub struct WorkspaceInviteViewOutputForm {
+pub struct WorkspaceInviteViewOutput {
     pub workspace_id: Uuid,
     pub invite_id: Uuid,
-    pub invite_status: InviteStatusForm,
+    pub invite_status: InviteStatus,
     pub created_by: Uuid,
     pub updated_by: Uuid,
     pub created_at: PrimitiveDateTime,
@@ -47,11 +52,12 @@ pub struct WorkspaceInviteViewOutputForm {
 }
 
 #[derive(Debug, Clone, AsChangeset)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[diesel(table_name = schema::workspace_invites)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 #[must_use = "forms do nothing unless you use them"]
-pub struct WorkspaceInviteUpdateInputForm {
-    pub invite_status: InviteStatusForm,
+pub struct WorkspaceInviteUpdateInput {
+    pub invite_status: InviteStatus,
     pub updated_by: Uuid,
 }
 
@@ -62,8 +68,8 @@ pub struct WorkspaceInviteUpdateInputForm {
 /// - workspace_invites
 pub async fn create_workspace_invite(
     conn: &mut AsyncPgConnection,
-    invite_form: &WorkspaceInviteCreateInputForm,
-) -> DatabaseResult<WorkspaceInviteCreateOutputForm> {
+    invite_form: &WorkspaceInviteCreateInput,
+) -> DatabaseResult<WorkspaceInviteCreateOutput> {
     use schema::workspace_invites::dsl::*;
 
     let query = insert_into(workspace_invites)
@@ -90,7 +96,7 @@ pub async fn update_workspace_invite(
     conn: &mut AsyncPgConnection,
     workspace_id_val: Uuid,
     invite_id_val: Uuid,
-    form: WorkspaceInviteUpdateInputForm,
+    form: WorkspaceInviteUpdateInput,
 ) -> DatabaseResult<()> {
     use schema::workspace_invites::dsl::*;
 
@@ -114,7 +120,7 @@ pub async fn view_workspace_invite(
     conn: &mut AsyncPgConnection,
     form_workspace_id: Uuid,
     invite_id_val: Uuid,
-) -> DatabaseResult<WorkspaceInviteViewOutputForm> {
+) -> DatabaseResult<WorkspaceInviteViewOutput> {
     use schema::workspace_invites::dsl::*;
 
     let filter_cond = workspace_id
@@ -122,7 +128,7 @@ pub async fn view_workspace_invite(
         .and(invite_id.eq(invite_id_val));
     let query = workspace_invites
         .filter(filter_cond)
-        .select(WorkspaceInviteViewOutputForm::as_select())
+        .select(WorkspaceInviteViewOutput::as_select())
         .get_result(conn)
         .await?;
 

@@ -19,8 +19,10 @@ pub mod workspaces;
 /// TODO.
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 pub enum QueryOrderBy {
-    #[serde(rename = "asc")]
+    /// Creates a SQL `ASC` expression, representing this expression in ascending order.
+    #[cfg_attr(feature = "serde", serde(rename = "asc"))]
     Ascending,
-    #[serde(rename = "desc")]
+    /// Creates a SQL `DESC` expression, representing this expression in descending order.
+    #[cfg_attr(feature = "serde", serde(rename = "desc"))]
     Descending,
 }

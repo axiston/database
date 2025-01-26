@@ -37,9 +37,9 @@ serde = { version = "1.0", features = ["derive"] }
 serde_json = { version = "1.0", features = [] }
 strum = { version = "0.26", features = ["derive"] }
 derive_more = { version = "1.0", features = ["full"] }
+time = { version = "0.3", features = ["serde", "formatting", "parsing"] }
 uuid = { version = "1.12", features = ["serde"] }
 ipnet = { version = "2.10", features = ["serde"] }
-time = { version = "0.3", features = ["serde", "formatting", "parsing"] }
 
 [package]
 name = "axiston-db-schema"
@@ -61,8 +61,13 @@ rustdoc-args = ["--cfg", "docsrs"]
 [lib]
 path = "./crates/schema/lib.rs"
 
+[features]
+default = ["serde"]
+serde = ["dep:serde"]
+
 [dependencies]
 diesel = { workspace = true }
 diesel_migrations = { workspace = true }
 diesel-derive-enum = { workspace = true }
 strum = { workspace = true }
+serde = { workspace = true, optional = true }

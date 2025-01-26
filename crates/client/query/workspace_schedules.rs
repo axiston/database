@@ -4,6 +4,8 @@ use axiston_db_schema::schema;
 use diesel::dsl::*;
 use diesel::prelude::*;
 use diesel_async::{AsyncPgConnection, RunQueryDsl};
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use time::PrimitiveDateTime;
 use uuid::Uuid;
@@ -11,19 +13,21 @@ use uuid::Uuid;
 use crate::DatabaseResult;
 
 #[derive(Debug, Clone, Insertable)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[diesel(table_name = schema::workspace_schedules)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 #[must_use = "forms do nothing unless you use them"]
-pub struct WorkspaceScheduleCreateInputForm<'a> {
+pub struct WorkspaceScheduleCreateInput {
     pub workspace_id: Uuid,
-    pub metadata: &'a Value,
+    pub metadata: Value,
 }
 
 #[derive(Debug, Clone, Queryable)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[diesel(table_name = schema::workspace_schedules)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 #[must_use = "forms do nothing unless you use them"]
-pub struct WorkspaceScheduleOutputForm {
+pub struct WorkspaceScheduleOutput {
     pub id: Uuid,
     pub workspace_id: Uuid,
     pub update_interval: i32,
@@ -34,11 +38,12 @@ pub struct WorkspaceScheduleOutputForm {
 }
 
 #[derive(Debug, Clone, AsChangeset)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[diesel(table_name = schema::workspace_schedules)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 #[must_use = "forms do nothing unless you use them"]
-pub struct WorkspaceScheduleUpdateInputForm<'a> {
-    pub metadata: Option<&'a Value>,
+pub struct WorkspaceScheduleUpdateInput {
+    pub metadata: Value,
 }
 
 /// Creates a new workspace schedule.
@@ -48,8 +53,8 @@ pub struct WorkspaceScheduleUpdateInputForm<'a> {
 ///  - workspace_schedules
 pub async fn create_workspace_schedule(
     conn: &mut AsyncPgConnection,
-    schedule_form: &WorkspaceScheduleCreateInputForm<'_>,
-) -> DatabaseResult<WorkspaceScheduleOutputForm> {
+    schedule_form: &WorkspaceScheduleCreateInput,
+) -> DatabaseResult<WorkspaceScheduleOutput> {
     use schema::workspace_schedules::dsl::*;
 
     let query = insert_into(workspace_schedules)
@@ -77,7 +82,7 @@ pub async fn create_workspace_schedule(
 pub async fn view_workspace_schedule(
     conn: &mut AsyncPgConnection,
     schedule_id: Uuid,
-) -> DatabaseResult<WorkspaceScheduleOutputForm> {
+) -> DatabaseResult<WorkspaceScheduleOutput> {
     use schema::workspace_schedules::dsl::*;
 
     let filter_cond = id.eq(schedule_id).and(deleted_at.is_null());
@@ -97,7 +102,7 @@ pub async fn view_workspace_schedule(
 pub async fn update_workspace_schedule(
     conn: &mut AsyncPgConnection,
     schedule_id: Uuid,
-    form: WorkspaceScheduleUpdateInputForm<'_>,
+    form: WorkspaceScheduleUpdateInput,
 ) -> DatabaseResult<()> {
     use schema::workspace_schedules::dsl::*;
 

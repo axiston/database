@@ -1,18 +1,18 @@
--- Drop `workspace_webhooks` table.
+-- Drops workspace webhooks, schedules and associated objects.
 DROP TABLE IF EXISTS workspace_webhooks;
 DROP TABLE IF EXISTS workspace_schedules;
 
--- Drop `workspace_invites` table and associated objects.
+-- Drops workspace invites and associated objects.
 DROP INDEX IF EXISTS workspace_invites_account_id_idx;
 DROP INDEX IF EXISTS workspace_invites_workspace_id_idx;
 DROP TABLE IF EXISTS workspace_invites;
 DROP TYPE IF EXISTS INVITE_STATUS;
 
--- Drop `workspace_members` table and associated objects.
+-- Drops workspace members and associated objects.
 DROP INDEX IF EXISTS workspace_members_account_id_idx;
 DROP INDEX IF EXISTS workspace_members_workspace_id_idx;
 DROP TABLE IF EXISTS workspace_members;
 DROP TYPE IF EXISTS PROJECT_ROLE;
 
--- Drop `workspaces` table.
+-- Drops workspaces and associated objects.
 DROP TABLE IF EXISTS workspaces;

@@ -4,15 +4,17 @@ use axiston_db_schema::schema;
 use diesel::dsl::*;
 use diesel::prelude::*;
 use diesel_async::{AsyncPgConnection, RunQueryDsl};
+#[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use time::PrimitiveDateTime;
 use uuid::Uuid;
-use crate::dsl::*;
 
+use crate::dsl::*;
 use crate::{DatabaseResult, QueryOrderBy};
 
-#[derive(Debug, Clone, Serialize, Deserialize, Insertable)]
+#[derive(Debug, Clone, Insertable)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[diesel(table_name = schema::workflow_executions)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 #[must_use = "forms do nothing unless you use them"]
@@ -21,13 +23,14 @@ pub struct WorkflowExecutionCreateInput {
     pub output_graph: Value,
     pub rt_metadata: Value,
 
-    #[serde(with = "crate::serde::iso8601")]
+    #[cfg_attr(feature = "serde", serde(with = "crate::serde::iso8601"))]
     pub started_at: PrimitiveDateTime,
-    #[serde(with = "crate::serde::iso8601")]
+    #[cfg_attr(feature = "serde", serde(with = "crate::serde::iso8601"))]
     pub ended_at: PrimitiveDateTime,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Queryable)]
+#[derive(Debug, Clone, Queryable)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[diesel(table_name = schema::workflow_executions)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 #[must_use = "forms do nothing unless you use them"]
@@ -57,7 +60,8 @@ pub async fn create_workflow_execution(
     })
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[must_use = "forms do nothing unless you use them"]
 pub struct WorkflowExecutionListInput {
     pub workflow_id: Uuid,
@@ -69,14 +73,16 @@ pub struct WorkflowExecutionListInput {
 }
 
 /// TODO.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum WorkflowsSortBy {
     StartedAt,
     EndedAt,
     TimeSpent,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Queryable, Selectable)]
+#[derive(Debug, Clone, Queryable, Selectable)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[diesel(table_name = schema::workflow_executions)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 #[must_use = "forms do nothing unless you use them"]
@@ -127,13 +133,15 @@ pub async fn list_workflow_executions(
     Ok(query)
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[must_use = "forms do nothing unless you use them"]
 pub struct WorkflowExecutionViewInput {
     pub execution_id: Uuid,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Queryable, Selectable)]
+#[derive(Debug, Clone, Queryable, Selectable)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[diesel(table_name = schema::workflow_executions)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 #[must_use = "forms do nothing unless you use them"]
@@ -143,9 +151,9 @@ pub struct WorkflowExecutionViewOutput {
     pub output_graph: Value,
     pub rt_metadata: Value,
 
-    #[serde(with = "crate::serde::iso8601")]
+    #[cfg_attr(feature = "serde", serde(with = "crate::serde::iso8601"))]
     pub started_at: PrimitiveDateTime,
-    #[serde(with = "crate::serde::iso8601")]
+    #[cfg_attr(feature = "serde", serde(with = "crate::serde::iso8601"))]
     pub ended_at: PrimitiveDateTime,
 }
 
@@ -170,7 +178,8 @@ pub async fn view_workflow_execution(
     Ok(query)
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[must_use = "forms do nothing unless you use them"]
 pub struct WorkflowExecutionDeleteInput {
     pub execution_id: Uuid,

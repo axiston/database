@@ -1,3 +1,7 @@
+//! Comprehensive list of all constraint violations.
+
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
 use strum::{Display, EnumString};
 
 /// Comprehensive list of all constraint violations.
@@ -5,6 +9,7 @@ use strum::{Display, EnumString};
 /// This includes unique constraint violations as well as foreign key
 /// constraint violations for various tables, including workspaces.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, EnumString, Display)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[must_use = "constraints do nothing unless they are used"]
 pub enum ConstraintViolation {
     #[strum(serialize = "accounts_non_empty_display_name")]
