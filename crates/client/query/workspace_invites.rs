@@ -32,7 +32,10 @@ pub struct WorkspaceInviteCreateOutput {
     pub workspace_id: Uuid,
     pub invite_id: Uuid,
     pub status: InviteStatus,
+
+    #[cfg_attr(feature = "serde", serde(with = "crate::serde::iso8601"))]
     pub created_at: PrimitiveDateTime,
+    #[cfg_attr(feature = "serde", serde(with = "crate::serde::iso8601"))]
     pub updated_at: PrimitiveDateTime,
 }
 
@@ -47,7 +50,10 @@ pub struct WorkspaceInviteViewOutput {
     pub invite_status: InviteStatus,
     pub created_by: Uuid,
     pub updated_by: Uuid,
+
+    #[cfg_attr(feature = "serde", serde(with = "crate::serde::iso8601"))]
     pub created_at: PrimitiveDateTime,
+    #[cfg_attr(feature = "serde", serde(with = "crate::serde::iso8601"))]
     pub updated_at: PrimitiveDateTime,
 }
 
