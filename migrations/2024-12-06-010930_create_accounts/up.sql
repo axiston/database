@@ -2,14 +2,14 @@
 CREATE TABLE accounts
 (
     -- Unique identifier for each account, used as a public resource.
-    id            UUID PRIMARY KEY   DEFAULT gen_random_uuid(),
+    id            UUID PRIMARY KEY     DEFAULT gen_random_uuid(),
 
     -- Publicly visible name for user identification.
-    display_name  TEXT      NOT NULL,
+    display_name  TEXT        NOT NULL,
     -- Unique contact email, used for authentication and communication.
-    email_address TEXT      NOT NULL,
+    email_address TEXT        NOT NULL,
     -- Securely hashed password to protect user credentials.
-    password_hash TEXT      NOT NULL,
+    password_hash TEXT        NOT NULL,
 
     --- Validation constraints to prevent empty or invalid entries.
     CONSTRAINT accounts_non_empty_display_name CHECK (display_name <> ''),
@@ -17,12 +17,12 @@ CREATE TABLE accounts
     CONSTRAINT accounts_non_empty_password_hash CHECK (password_hash <> ''),
 
     -- Account activation status for additional security.
-    is_activated  BOOL      NOT NULL DEFAULT FALSE,
+    is_activated  BOOL        NOT NULL DEFAULT FALSE,
 
     -- Timestamps for tracking the row's lifecycle.
-    created_at    TIMESTAMP NOT NULL DEFAULT current_timestamp,
-    updated_at    TIMESTAMP NOT NULL DEFAULT current_timestamp,
-    deleted_at    TIMESTAMP          DEFAULT NULL,
+    created_at    TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
+    updated_at    TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
+    deleted_at    TIMESTAMPTZ          DEFAULT NULL,
 
     -- Integrity checks to maintain chronological consistency.
     CONSTRAINT accounts_updated_after_created CHECK (updated_at >= created_at),
@@ -47,11 +47,11 @@ CREATE INDEX accounts_credentials_idx
 CREATE TABLE account_sessions
 (
     -- Unique session identifier with account association.
-    token_seq  UUID      NOT NULL DEFAULT gen_random_uuid(),
+    token_seq  UUID        NOT NULL DEFAULT gen_random_uuid(),
     -- Reference to the associated user account.
-    account_id UUID      NOT NULL REFERENCES accounts (id) ON DELETE CASCADE,
+    account_id UUID        NOT NULL REFERENCES accounts (id) ON DELETE CASCADE,
     -- Two-character region code for session origin (e.g., "US", "EU").
-    region_id  CHAR(2)   NOT NULL DEFAULT 'A0',
+    region_id  CHAR(2)     NOT NULL DEFAULT 'A0',
 
     -- Ensures unique token sequences for each account.
     CONSTRAINT account_sessions_pkey PRIMARY KEY (account_id, token_seq),
@@ -59,13 +59,13 @@ CREATE TABLE account_sessions
     CONSTRAINT account_sessions_region_alphanumeric CHECK (region_id ~ '^[A-Z0-9]{2}$'),
 
     -- Security-related information.
-    ip_address INET      NOT NULL,
-    user_agent TEXT      NOT NULL,
+    ip_address INET        NOT NULL,
+    user_agent TEXT        NOT NULL,
 
     -- Timestamps for tracking the row's lifecycle.
-    issued_at  TIMESTAMP NOT NULL DEFAULT current_timestamp,
-    expired_at TIMESTAMP NOT NULL DEFAULT current_timestamp + INTERVAL '7 days',
-    deleted_at TIMESTAMP          DEFAULT NULL,
+    issued_at  TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
+    expired_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp + INTERVAL '7 days',
+    deleted_at TIMESTAMPTZ          DEFAULT NULL,
 
     -- Integrity checks to maintain chronological consistency.
     CONSTRAINT account_sessions_expired_after_issued CHECK (expired_at >= issued_at),
@@ -84,18 +84,18 @@ CREATE TABLE account_permissions
     account_id       UUID PRIMARY KEY REFERENCES accounts (id) ON DELETE CASCADE,
 
     -- Universal permissions flags for read and write access.
-    read_accounts    BOOLEAN   NOT NULL DEFAULT FALSE,
-    write_accounts   BOOLEAN   NOT NULL DEFAULT FALSE,
+    read_accounts    BOOLEAN     NOT NULL DEFAULT FALSE,
+    write_accounts   BOOLEAN     NOT NULL DEFAULT FALSE,
 
-    read_workspaces  BOOLEAN   NOT NULL DEFAULT FALSE,
-    write_workspaces BOOLEAN   NOT NULL DEFAULT FALSE,
+    read_workspaces  BOOLEAN     NOT NULL DEFAULT FALSE,
+    write_workspaces BOOLEAN     NOT NULL DEFAULT FALSE,
 
-    read_workflows   BOOLEAN   NOT NULL DEFAULT FALSE,
-    write_workflows  BOOLEAN   NOT NULL DEFAULT FALSE,
+    read_workflows   BOOLEAN     NOT NULL DEFAULT FALSE,
+    write_workflows  BOOLEAN     NOT NULL DEFAULT FALSE,
 
     -- Timestamps for tracking the row's lifecycle.
-    created_at       TIMESTAMP NOT NULL DEFAULT current_timestamp,
-    updated_at       TIMESTAMP NOT NULL DEFAULT current_timestamp,
+    created_at       TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
+    updated_at       TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
 
     -- Integrity checks to maintain chronological consistency.
     CONSTRAINT account_permissions_updated_after_created CHECK (updated_at >= created_at)
@@ -136,9 +136,9 @@ CREATE TABLE account_tokens
     user_agent   TEXT         NOT NULL,
 
     -- Timestamps for tracking the row's lifecycle.
-    issued_at    TIMESTAMP    NOT NULL DEFAULT current_timestamp,
-    expired_at   TIMESTAMP    NOT NULL DEFAULT current_timestamp + INTERVAL '7 days',
-    used_at      TIMESTAMP             DEFAULT NULL,
+    issued_at    TIMESTAMPTZ  NOT NULL DEFAULT current_timestamp,
+    expired_at   TIMESTAMPTZ  NOT NULL DEFAULT current_timestamp + INTERVAL '7 days',
+    used_at      TIMESTAMPTZ           DEFAULT NULL,
 
     -- Integrity checks to maintain chronological consistency.
     CONSTRAINT account_tokens_expired_after_issued CHECK (expired_at >= issued_at),

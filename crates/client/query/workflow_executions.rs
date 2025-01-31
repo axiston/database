@@ -7,7 +7,7 @@ use diesel_async::{AsyncPgConnection, RunQueryDsl};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use time::PrimitiveDateTime;
+use time::OffsetDateTime;
 use uuid::Uuid;
 
 use crate::dsl::*;
@@ -23,10 +23,8 @@ pub struct WorkflowExecutionCreateInput {
     pub output_graph: Value,
     pub rt_metadata: Value,
 
-    #[cfg_attr(feature = "serde", serde(with = "crate::serde::iso8601"))]
-    pub started_at: PrimitiveDateTime,
-    #[cfg_attr(feature = "serde", serde(with = "crate::serde::iso8601"))]
-    pub ended_at: PrimitiveDateTime,
+    pub started_at: OffsetDateTime,
+    pub ended_at: OffsetDateTime,
 }
 
 #[derive(Debug, Clone, Queryable)]
@@ -151,10 +149,8 @@ pub struct WorkflowExecutionViewOutput {
     pub output_graph: Value,
     pub rt_metadata: Value,
 
-    #[cfg_attr(feature = "serde", serde(with = "crate::serde::iso8601"))]
-    pub started_at: PrimitiveDateTime,
-    #[cfg_attr(feature = "serde", serde(with = "crate::serde::iso8601"))]
-    pub ended_at: PrimitiveDateTime,
+    pub started_at: OffsetDateTime,
+    pub ended_at: OffsetDateTime,
 }
 
 /// Returns the details of the specified workflow execution.

@@ -1,4 +1,4 @@
--- Manage general workflow metadata.
+-- Workflow graph management with metadata and lifecycle tracking.
 CREATE TABLE workflows
 (
     -- Unique identifier for each workflow, used as a public resource.

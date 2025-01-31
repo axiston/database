@@ -2,11 +2,11 @@
 CREATE TABLE workspaces
 (
     -- Unique identifier for each workspace, used as a public resource.
-    id           UUID PRIMARY KEY   DEFAULT gen_random_uuid(),
+    id           UUID PRIMARY KEY     DEFAULT gen_random_uuid(),
     -- Name of the workspace, provided by the user.
-    display_name TEXT      NOT NULL DEFAULT 'Untitled',
+    display_name TEXT        NOT NULL DEFAULT 'Untitled',
     -- Additional workspace metadata, stored in JSON format (e.g., description, tags).
-    metadata     JSONB     NOT NULL DEFAULT '{}'::JSONB,
+    metadata     JSONB       NOT NULL DEFAULT '{}'::JSONB,
 
     -- Ensures the workspace name is not empty.
     CONSTRAINT workspaces_non_empty_display_name CHECK (display_name <> ''),
@@ -14,9 +14,9 @@ CREATE TABLE workspaces
     CONSTRAINT workspaces_metadata_limit CHECK (length(metadata::TEXT) <= 2048),
 
     -- Timestamps for tracking the row's lifecycle.
-    created_at   TIMESTAMP NOT NULL DEFAULT current_timestamp,
-    updated_at   TIMESTAMP NOT NULL DEFAULT current_timestamp,
-    deleted_at   TIMESTAMP          DEFAULT NULL,
+    created_at   TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
+    updated_at   TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
+    deleted_at   TIMESTAMPTZ          DEFAULT NULL,
 
     -- Integrity checks to maintain chronological consistency.
     CONSTRAINT workspaces_updated_after_created CHECK (updated_at >= created_at),
@@ -56,8 +56,8 @@ CREATE TABLE workspace_members
     updated_by   UUID         NOT NULL REFERENCES accounts (id) ON DELETE CASCADE,
 
     -- Timestamps for tracking member's record lifecycle.
-    created_at   TIMESTAMP    NOT NULL DEFAULT current_timestamp,
-    updated_at   TIMESTAMP    NOT NULL DEFAULT current_timestamp,
+    created_at   TIMESTAMPTZ  NOT NULL DEFAULT current_timestamp,
+    updated_at   TIMESTAMPTZ  NOT NULL DEFAULT current_timestamp,
 
     -- Integrity checks to maintain chronological consistency.
     CONSTRAINT workspace_members_updated_after_created CHECK (updated_at >= created_at)
@@ -99,8 +99,8 @@ CREATE TABLE workspace_invites
     updated_by    UUID          NOT NULL REFERENCES accounts (id) ON DELETE CASCADE,
 
     -- Timestamps for tracking the row's lifecycle.
-    created_at    TIMESTAMP     NOT NULL DEFAULT current_timestamp,
-    updated_at    TIMESTAMP     NOT NULL DEFAULT current_timestamp,
+    created_at    TIMESTAMPTZ   NOT NULL DEFAULT current_timestamp,
+    updated_at    TIMESTAMPTZ   NOT NULL DEFAULT current_timestamp,
 
     -- Integrity checks to maintain chronological consistency.
     CONSTRAINT workspace_invites_updated_after_created CHECK (updated_at >= created_at)
@@ -137,9 +137,9 @@ CREATE TABLE workspace_schedules
     CONSTRAINT workspace_schedules_metadata_limit CHECK (length(metadata::TEXT) <= 2048),
 
     -- Timestamps for tracking the row's lifecycle.
-    created_at      TIMESTAMP        NOT NULL DEFAULT current_timestamp,
-    updated_at      TIMESTAMP        NOT NULL DEFAULT current_timestamp,
-    deleted_at      TIMESTAMP                 DEFAULT NULL,
+    created_at      TIMESTAMPTZ      NOT NULL DEFAULT current_timestamp,
+    updated_at      TIMESTAMPTZ      NOT NULL DEFAULT current_timestamp,
+    deleted_at      TIMESTAMPTZ               DEFAULT NULL,
 
     -- Integrity checks to maintain chronological consistency.
     CONSTRAINT workspace_schedules_updated_after_created CHECK (updated_at >= created_at),
@@ -165,9 +165,9 @@ CREATE TABLE workspace_webhooks
     CONSTRAINT workspace_webhooks_metadata_limit CHECK (length(metadata::TEXT) <= 2048),
 
     -- Timestamps for tracking the row's lifecycle.
-    created_at   TIMESTAMP        NOT NULL DEFAULT current_timestamp,
-    updated_at   TIMESTAMP        NOT NULL DEFAULT current_timestamp,
-    deleted_at   TIMESTAMP                 DEFAULT NULL,
+    created_at   TIMESTAMPTZ      NOT NULL DEFAULT current_timestamp,
+    updated_at   TIMESTAMPTZ      NOT NULL DEFAULT current_timestamp,
+    deleted_at   TIMESTAMPTZ               DEFAULT NULL,
 
     -- Integrity checks to maintain chronological consistency.
     CONSTRAINT workspace_webhooks_updated_after_created CHECK (updated_at >= created_at),

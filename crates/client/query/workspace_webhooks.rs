@@ -7,7 +7,7 @@ use diesel_async::{AsyncPgConnection, RunQueryDsl};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use time::PrimitiveDateTime;
+use time::OffsetDateTime;
 use uuid::Uuid;
 
 use crate::DatabaseResult;
@@ -32,12 +32,9 @@ pub struct WorkspaceWebhookCreateOutput {
     pub workspace_id: Uuid,
     pub metadata: Value,
 
-    #[cfg_attr(feature = "serde", serde(with = "crate::serde::iso8601"))]
-    pub created_at: PrimitiveDateTime,
-    #[cfg_attr(feature = "serde", serde(with = "crate::serde::iso8601"))]
-    pub updated_at: PrimitiveDateTime,
-    #[cfg_attr(feature = "serde", serde(with = "crate::serde::iso8601::option"))]
-    pub deleted_at: Option<PrimitiveDateTime>,
+    pub created_at: OffsetDateTime,
+    pub updated_at: OffsetDateTime,
+    pub deleted_at: Option<OffsetDateTime>,
 }
 
 /// Creates a new workspace webhook.

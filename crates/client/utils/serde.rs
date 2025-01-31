@@ -1,6 +1,8 @@
 //! Additional [`serde::Serializer`]s and [`serde::Deserializer`]s.
 
 pub mod iso8601 {
+    #![allow(dead_code)]
+
     //! [`time::serde::iso8601`] for [`PrimitiveDateTime`].
 
     use serde::{Deserializer, Serializer};

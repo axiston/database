@@ -24,9 +24,7 @@ use diesel_async::pooled_connection::PoolError as PoolError2;
 pub use crate::config::{Database, DatabaseConfig};
 pub use crate::migrate::DatabaseExt;
 pub use crate::query::*;
-pub(crate) use crate::utils::dsl;
-#[cfg(feature = "serde")]
-pub(crate) use crate::utils::serde;
+pub(crate) use crate::utils::*;
 
 mod config;
 mod migrate;
@@ -60,13 +58,14 @@ impl From<PoolError> for DatabaseError {
     fn from(value: PoolError) -> Self {
         match value {
             PoolError::Timeout(timeout_type) => Self::Timeout(timeout_type),
+            PoolError::Backend(PoolError2::QueryError(query_error)) => Self::Query(query_error),
             PoolError::Backend(PoolError2::ConnectionError(connection_error)) => {
                 Self::Connection(connection_error)
             }
-            PoolError::Backend(PoolError2::QueryError(query_error)) => Self::Query(query_error),
-            PoolError::PostCreateHook(_) => unreachable!(),
-            PoolError::NoRuntimeSpecified => unreachable!(),
-            PoolError::Closed => unreachable!(),
+
+            PoolError::PostCreateHook(_) => unreachable!("custom hooks should not return errors"),
+            PoolError::NoRuntimeSpecified => unreachable!("tokio runtime should be specified"),
+            PoolError::Closed => unreachable!("connection pool should not be closed"),
         }
     }
 }

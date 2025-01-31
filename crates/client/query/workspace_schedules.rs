@@ -8,7 +8,7 @@ use diesel_async::{AsyncPgConnection, RunQueryDsl};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use time::PrimitiveDateTime;
+use time::OffsetDateTime;
 use uuid::Uuid;
 
 use crate::DatabaseResult;
@@ -63,12 +63,9 @@ pub struct WorkspaceScheduleViewOutput {
     pub update_interval: i32,
     pub metadata: Value,
 
-    #[cfg_attr(feature = "serde", serde(with = "crate::serde::iso8601"))]
-    pub created_at: PrimitiveDateTime,
-    #[cfg_attr(feature = "serde", serde(with = "crate::serde::iso8601"))]
-    pub updated_at: PrimitiveDateTime,
-    #[cfg_attr(feature = "serde", serde(with = "crate::serde::iso8601::option"))]
-    pub deleted_at: Option<PrimitiveDateTime>,
+    pub created_at: OffsetDateTime,
+    pub updated_at: OffsetDateTime,
+    pub deleted_at: Option<OffsetDateTime>,
 }
 
 /// Retrieves a workspace schedule by its ID.
@@ -104,7 +101,7 @@ pub async fn view_workspace_schedule(
 pub async fn view_workflows_by_interval(
     conn: &mut AsyncPgConnection,
     max_batch_size: i64,
-    max_timeout: PrimitiveDateTime,
+    max_timeout: OffsetDateTime,
 ) -> DatabaseResult<Vec<WorkspaceScheduleViewOutput>> {
     use schema::workflow_schedules::dsl as wfs_dsl;
     use schema::workflows::dsl as wf_dsl;

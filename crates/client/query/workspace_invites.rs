@@ -7,7 +7,7 @@ use diesel::prelude::*;
 use diesel_async::{AsyncPgConnection, RunQueryDsl};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
-use time::PrimitiveDateTime;
+use time::OffsetDateTime;
 use uuid::Uuid;
 
 use crate::DatabaseResult;
@@ -33,10 +33,8 @@ pub struct WorkspaceInviteCreateOutput {
     pub invite_id: Uuid,
     pub status: InviteStatus,
 
-    #[cfg_attr(feature = "serde", serde(with = "crate::serde::iso8601"))]
-    pub created_at: PrimitiveDateTime,
-    #[cfg_attr(feature = "serde", serde(with = "crate::serde::iso8601"))]
-    pub updated_at: PrimitiveDateTime,
+    pub created_at: OffsetDateTime,
+    pub updated_at: OffsetDateTime,
 }
 
 #[derive(Debug, Clone, Queryable, Selectable)]
@@ -51,10 +49,8 @@ pub struct WorkspaceInviteViewOutput {
     pub created_by: Uuid,
     pub updated_by: Uuid,
 
-    #[cfg_attr(feature = "serde", serde(with = "crate::serde::iso8601"))]
-    pub created_at: PrimitiveDateTime,
-    #[cfg_attr(feature = "serde", serde(with = "crate::serde::iso8601"))]
-    pub updated_at: PrimitiveDateTime,
+    pub created_at: OffsetDateTime,
+    pub updated_at: OffsetDateTime,
 }
 
 #[derive(Debug, Clone, AsChangeset)]
