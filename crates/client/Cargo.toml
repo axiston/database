@@ -33,6 +33,7 @@ diesel = { workspace = true }
 diesel_migrations = { workspace = true }
 diesel-async = { workspace = true }
 
+tokio = { workspace = true }
 deadpool = { workspace = true }
 futures = { workspace = true }
 tracing = { workspace = true }

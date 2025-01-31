@@ -82,14 +82,14 @@ mod test {
     use crate::{Database, DatabaseResult};
 
     #[tokio::test]
-    fn connect_single_gateway() -> DatabaseResult<()> {
+    async fn connect_single_gateway() -> DatabaseResult<()> {
         let addr = "postgresql://postgres:postgres@localhost:5432/postgres";
         let _ = Database::new_single_gateway(addr);
         Ok(())
     }
 
     #[tokio::test]
-    fn connect_multiple_gateways() -> DatabaseResult<()> {
+    async fn connect_multiple_gateways() -> DatabaseResult<()> {
         let addr = "postgresql://postgres:postgres@localhost:5432/postgres";
         let _ = Database::new_multiple_gateways(addr);
         Ok(())

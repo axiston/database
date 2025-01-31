@@ -7,6 +7,7 @@ use std::ops::DerefMut;
 use axiston_db_schema::MIGRATIONS;
 use diesel_async::async_connection_wrapper::AsyncConnectionWrapper;
 use diesel_migrations::MigrationHarness;
+use tokio::task::spawn_blocking;
 
 use crate::migrate::custom_hooks::{post_migrate, pre_migrate};
 use crate::{Database, DatabaseError, DatabaseResult};
@@ -28,15 +29,18 @@ impl DatabaseExt for Database {
         let mut wrapper: AsyncConnectionWrapper<_> = conn.into();
         pre_migrate(wrapper.deref_mut()).await?;
 
-        let migrations = {
+        let migrations: DatabaseResult<u64> = spawn_blocking(move || {
             let versions = wrapper
                 .run_pending_migrations(MIGRATIONS)
                 .map_err(DatabaseError::Migration)?;
-            versions.len() as u64
-        };
+            Ok(versions.len() as u64)
+        })
+        .await
+        .unwrap();
 
-        post_migrate(wrapper.deref_mut()).await?;
-        Ok(migrations)
+        let mut conn = self.get_connection().await?;
+        post_migrate(conn.deref_mut()).await?;
+        migrations
     }
 
     async fn rollback_migrations(&self) -> DatabaseResult<u64> {
@@ -44,15 +48,18 @@ impl DatabaseExt for Database {
         let mut wrapper: AsyncConnectionWrapper<_> = conn.into();
         pre_migrate(wrapper.deref_mut()).await?;
 
-        let migrations = {
+        let migrations: DatabaseResult<u64> = spawn_blocking(move || {
             let versions = wrapper
                 .revert_all_migrations(MIGRATIONS)
                 .map_err(DatabaseError::Migration)?;
-            versions.len() as u64
-        };
+            Ok(versions.len() as u64)
+        })
+        .await
+        .unwrap();
 
-        post_migrate(wrapper.deref_mut()).await?;
-        Ok(migrations)
+        let mut conn = self.get_connection().await?;
+        post_migrate(conn.deref_mut()).await?;
+        migrations
     }
 }
 

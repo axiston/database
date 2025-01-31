@@ -98,8 +98,6 @@ pub async fn view_workspace_schedule(
 ///
 /// Also updates the modification timestamp.
 ///
-/// Used with [`poll_workspace_schedule`].
-///
 /// # Tables
 ///
 /// - workspace_schedules
