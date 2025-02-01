@@ -11,6 +11,7 @@ repository = { workspace = true }
 homepage = { workspace = true }
 documentation = { workspace = true }
 include = ["*.rs", "**/*.rs", "migrations"]
+description = "Generated database schema for the Axiston application."
 
 [package.metadata.docs.rs]
 all-features = true

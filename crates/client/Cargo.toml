@@ -12,6 +12,7 @@ authors = { workspace = true }
 repository = { workspace = true }
 homepage = { workspace = true }
 documentation = { workspace = true }
+description = "Database client and queries for the Axiston application."
 
 [package.metadata.docs.rs]
 all-features = true

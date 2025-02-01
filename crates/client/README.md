@@ -13,8 +13,8 @@
 [docs-badge]: https://img.shields.io/docsrs/axiston-database-connect?logo=Docs.rs&style=flat-square
 [docs-url]: http://docs.rs/axiston-database-connect
 
-Provides a database client for the applications, integrating key features such
-as database connection pooling powered by [deadpool][deadpool], migrations (and
+Provides a database client for the application, integrating key features such as
+database connection pooling powered by [deadpool][deadpool], migrations (and
 rollbacks), predefined queries for database entities, and tracing support for
 debugging and observability.
 
