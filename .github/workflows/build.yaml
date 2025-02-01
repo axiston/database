@@ -104,15 +104,15 @@ jobs:
             -   name: Publish crates/schema to crates.io
                 run: |
                     cd ./crates/schema
-                    cargo publish --token ${ CRATES_TOKEN }
-                    cd -  # Return to the root of the workspace
+                    cargo publish --token ${CRATES_TOKEN}
+                    cd -
                 env:
                     CRATES_TOKEN: ${{ secrets.CRATES_TOKEN }}
 
             -   name: Publish crates/client to crates.io
                 run: |
                     cd ./crates/client
-                    cargo publish --token ${ CRATES_TOKEN }
-                    cd -  # Return to the root of the workspace
+                    cargo publish --token ${CRATES_TOKEN}
+                    cd -
                 env:
                     CRATES_TOKEN: ${{ secrets.CRATES_TOKEN }}
