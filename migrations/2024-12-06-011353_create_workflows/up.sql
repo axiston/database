@@ -47,7 +47,7 @@ CREATE INDEX workflows_workspace_idx
     ON workflows (workspace_id)
     WHERE deleted_at IS NULL;
 
--- Manages workflow schedule dependencies.
+-- Workflow schedule management.
 CREATE TABLE workflow_schedules
 (
     -- Reference to the associated workflow, used as a public resource.
@@ -62,7 +62,7 @@ CREATE TABLE workflow_schedules
     created_at  TIMESTAMPTZ NOT NULL DEFAULT current_timestamp
 );
 
--- Manages workflow webhook dependencies.
+-- Workflow webhook management.
 CREATE TABLE workflow_webhooks
 (
     -- Reference to the associated workflow, used as a public resource.
@@ -77,7 +77,7 @@ CREATE TABLE workflow_webhooks
     created_at  TIMESTAMPTZ NOT NULL DEFAULT current_timestamp
 );
 
--- Manages workflow executions.
+-- Workflow execution management.
 CREATE TABLE workflow_executions
 (
     -- Reference to the associated workflow, used as a public resource.
