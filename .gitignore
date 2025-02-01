@@ -18,3 +18,4 @@ Cargo.lock
 
 # Generated
 /crates/schema/schema.rs
+deno.jsonc

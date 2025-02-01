@@ -1,14 +1,14 @@
--- Drops the `account_emails` and associated objects.
-DROP TABLE IF EXISTS account_actions;
-DROP TYPE IF EXISTS EMAIL_TYPE;
+-- Drops account action tokens and associated objects.
+DROP TABLE IF EXISTS account_tokens;
+DROP TYPE IF EXISTS TOKEN_ACTION;
 
--- Drop the `account_permissions` and `account_sessions` table.
+-- Drops user permissions, sessions and associated objects.
 DROP INDEX IF EXISTS account_permissions_absolute_idx;
 DROP TABLE IF EXISTS account_permissions;
 DROP INDEX IF EXISTS account_sessions_only_active_idx;
 DROP TABLE IF EXISTS account_sessions;
 
--- Drop the `accounts` table and associated objects.
+-- Drops the user accounts and associated objects.
 DROP INDEX IF EXISTS accounts_local_credentials_idx;
 DROP INDEX IF EXISTS accounts_unique_email_address_idx;
 DROP TABLE IF EXISTS accounts;

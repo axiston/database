@@ -1,6 +1,6 @@
 name: "Wait for Postgres"
 description: "Waits for the PostgreSQL service to be ready."
-author: "Your Name"
+author: "Oleh Martsokha"
 
 inputs:
     host:

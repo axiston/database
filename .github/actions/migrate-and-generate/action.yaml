@@ -1,5 +1,6 @@
-name: Migrate and Generate
-description: Runs migrations and generates code.
+name: "Migrate and Generate"
+description: "Runs migrations and generates code."
+author: "Oleh Martsokha"
 
 inputs:
     host:

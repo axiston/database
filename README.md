@@ -10,25 +10,28 @@
 [docker-badge]: https://img.shields.io/docker/automated/_/postgres?style=flat-square&logo=docker&logoColor=white&color=%232496ED
 [docker-url]: https://hub.docker.com/u/axiston/database
 
-Unmodified Postgres 17 Docker image with all extensions and migrations.
+A standard PostgreSQL 17 Docker image with all project-required extensions,
+migrations, and a database client including a generated schema.
 
 #### Notes
 
-- Includes [pg_cron][pg_cron] `postgres` extension.
-- Consists out of [axiston_db_migrate][migrate] and [axiston_db_schema][schema]
+- See the [official Postgres image] for more details on PostgreSQL configuration
+  and features.
+- Includes the [axiston_db_schema][schema] and [axiston_db_client][client]
   crates.
 
-[migrate]: https://crates.io/crates/axiston-db-migrate
+[official Postgres image]: https://hub.docker.com/_/postgres
+[pg_cron]: https://github.com/citusdata/pg_cron
 [schema]: https://crates.io/crates/axiston-db-schema
+[client]: https://crates.io/crates/axiston-db-client
 
 #### Dependencies
 
-- Depends on [diesel][diesel] as an object–relational mapping and
-  [diesel_migrations][diesel_migrations] as a migration tool.
+- Uses [diesel][diesel] as an object–relational mapping and
+  [diesel_migrations][diesel_migrations] for database migrations.
 - Depends on [diesel_async][diesel_async] for asynchronous connections and
-  [diesel_derive_enum][diesel_derive_enum] for enum boilerplate.
+  [diesel_derive_enum][diesel_derive_enum] to streamline enum handling.
 
-[pg_cron]: https://github.com/citusdata/pg_cron
 [diesel]: https://crates.io/crates/diesel
 [diesel_migrations]: https://crates.io/crates/diesel_migrations
 [diesel_async]: https://crates.io/crates/diesel-async/
@@ -40,7 +43,7 @@ Unmodified Postgres 17 Docker image with all extensions and migrations.
   do not modify it.
 - Migrations in `migration/` must be idempotent, ensuring they can be run
   multiple times without causing issues.
-- Self-hosted service users should update role passwords separately after
-  running all migrations.
-- Production releases are done by publishing a new GitHub release from the
+- Self-hosted service users should update role passwords manually after running
+  all migrations.
+- Production releases are created by publishing a new GitHub release from the
   `main` branch.
