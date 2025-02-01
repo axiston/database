@@ -42,10 +42,13 @@ rollback: ## Rolls back the last migration.
 	$(call print-success, "Migration rolled back successfully.")
 
 .PHONY: clean
-clean: ## Deletes the output schema file.
-	$(call print-info, "Cleaning project...")
+clean: ## Deletes the output schema file and copied migrations directory.
+	$(call print-info, "Deleting schema file...")
 	rm -f $(SCHEMA_OUTPUT)
-	$(call print-success, "Project cleaned.")
+	$(call print-success, "Schema file deleted.")
+	$(call print-info, "Deleting migrations directory...")
+	rm -rf $(MIGRATIONS_DEST)
+	$(call print-success, "Migrations directory deleted.")
 
 .PHONY: generate
 generate: ## Generates and updates the schema file.
