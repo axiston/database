@@ -101,7 +101,18 @@ jobs:
                     password: "postgres"
                     database: "postgres"
 
-            -   name: Publish to Crates.io
-                run: cargo publish --workspace -Z package-workspace --token ${CRATES_TOKEN}
+            -   name: Publish crates/schema to crates.io
+                run: |
+                    cd ./crates/schema
+                    cargo publish --token ${{ CRATES_TOKEN }}
+                    cd -  # Return to the root of the workspace
+                env:
+                    CRATES_TOKEN: ${{ secrets.CRATES_TOKEN }}
+
+            -   name: Publish crates/client to crates.io
+                run: |
+                    cd ./crates/client
+                    cargo publish --token ${{ CRATES_TOKEN }}
+                    cd -  # Return to the root of the workspace
                 env:
                     CRATES_TOKEN: ${{ secrets.CRATES_TOKEN }}
