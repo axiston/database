@@ -17,6 +17,10 @@ migrations, and a database client including a generated schema.
 
 - See the [official Postgres image] for more details on PostgreSQL configuration
   and features.
+- If you already have a running PostgreSQL instance that you want to use with
+  this service, you must install, configure, and enable the required extensions
+  before starting the gateway. Refer to the [Dockerfile][dockerfile] and
+  [./scripts/*][scripts] for details.
 - Includes the [axiston_db_schema][schema] and [axiston_db_client][client]
   crates.
 
@@ -24,6 +28,8 @@ migrations, and a database client including a generated schema.
 [pg_cron]: https://github.com/citusdata/pg_cron
 [schema]: https://crates.io/crates/axiston-db-schema
 [client]: https://crates.io/crates/axiston-db-client
+[dockerfile]: ./Dockerfile
+[scripts]: ./scripts/
 
 #### Dependencies
 
