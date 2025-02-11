@@ -5,7 +5,6 @@ use diesel::dsl::*;
 use diesel::prelude::*;
 use diesel::sql_types::{Bool, Timestamptz};
 use diesel_async::{AsyncPgConnection, RunQueryDsl};
-#[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use time::OffsetDateTime;
@@ -13,8 +12,7 @@ use uuid::Uuid;
 
 use crate::DatabaseResult;
 
-#[derive(Debug, Clone, Insertable)]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, Serialize, Deserialize, Insertable)]
 #[diesel(table_name = schema::workspace_schedules)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 #[must_use = "forms do nothing unless you use them"]
@@ -23,8 +21,7 @@ pub struct WorkspaceScheduleCreateInput {
     pub metadata: Value,
 }
 
-#[derive(Debug, Clone, Queryable)]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, Serialize, Deserialize, Queryable)]
 #[diesel(table_name = schema::workspace_schedules)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 #[must_use = "forms do nothing unless you use them"]
@@ -52,8 +49,7 @@ pub async fn create_workspace_schedule(
     Ok(query)
 }
 
-#[derive(Debug, Clone, Queryable, Selectable)]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, Serialize, Deserialize, Queryable, Selectable)]
 #[diesel(table_name = schema::workspace_schedules)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 #[must_use = "forms do nothing unless you use them"]
@@ -138,8 +134,7 @@ pub async fn view_workflows_by_interval(
     Ok(queries)
 }
 
-#[derive(Debug, Clone, AsChangeset)]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, Serialize, Deserialize, AsChangeset)]
 #[diesel(table_name = schema::workspace_schedules)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 #[must_use = "forms do nothing unless you use them"]

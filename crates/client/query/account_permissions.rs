@@ -4,14 +4,12 @@ use axiston_db_schema::schema;
 use diesel::dsl::*;
 use diesel::prelude::*;
 use diesel_async::{AsyncPgConnection, RunQueryDsl};
-#[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 use crate::DatabaseResult;
 
-#[derive(Debug, Clone, Insertable, Queryable, Selectable)]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, Serialize, Deserialize, Insertable, Queryable, Selectable)]
 #[diesel(table_name = schema::account_permissions)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 #[must_use = "forms do nothing unless you use them"]
@@ -52,7 +50,7 @@ pub async fn update_permissions(
         .do_update()
         .set((
             read_accounts.eq(form.read_accounts),
-            read_accounts.eq(form.write_accounts),
+            write_accounts.eq(form.write_accounts),
             read_workspaces.eq(form.read_workspaces),
             write_workspaces.eq(form.write_workspaces),
             read_workflows.eq(form.read_workflows),

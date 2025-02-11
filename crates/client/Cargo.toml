@@ -22,10 +22,7 @@ rustdoc-args = ["--cfg", "docsrs"]
 path = "lib.rs"
 
 [features]
-default = ["serde"]
-
-# Enables (de)serialization for all objects.
-serde = []
+default = []
 
 [dependencies]
 axiston-db-schema = { workspace = true }

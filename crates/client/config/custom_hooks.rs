@@ -2,7 +2,7 @@
 
 use deadpool::managed::{HookResult, Metrics};
 use diesel::ConnectionResult;
-use diesel_async::pooled_connection::PoolError;
+use diesel_async::pooled_connection::{PoolError, PoolableConnection};
 use diesel_async::{AsyncConnection, AsyncPgConnection};
 use futures::future::BoxFuture;
 use futures::FutureExt;
@@ -18,6 +18,7 @@ where
     C: AsyncConnection + 'static,
 {
     // tracing::trace!(target: "database", "setup_callback is running");
+
     C::establish(addr).boxed()
 }
 
@@ -38,8 +39,12 @@ pub fn post_create(_conn: &mut AsyncPgConnection, _metrics: &Metrics) -> HookRes
 /// See [`PoolBuilder`] for more details.
 ///
 /// [`PoolBuilder`]: deadpool::managed::PoolBuilder
-pub fn pre_recycle(_conn: &mut AsyncPgConnection, _metrics: &Metrics) -> HookResult<PoolError> {
-    tracing::trace!(target: "database", "pre_recycle hook is running");
+pub fn pre_recycle(conn: &mut AsyncPgConnection, _metrics: &Metrics) -> HookResult<PoolError> {
+    tracing::trace!(
+        target: "database",
+        is_broken = conn.is_broken(),
+        "pre recycle hook is running"
+    );
 
     // Note: should never return an error.
     Ok(())
@@ -50,8 +55,12 @@ pub fn pre_recycle(_conn: &mut AsyncPgConnection, _metrics: &Metrics) -> HookRes
 /// See [`PoolBuilder`] for more details.
 ///
 /// [`PoolBuilder`]: deadpool::managed::PoolBuilder
-pub fn post_recycle(_conn: &mut AsyncPgConnection, _metrics: &Metrics) -> HookResult<PoolError> {
-    tracing::trace!(target: "database", "post_recycle hook is running");
+pub fn post_recycle(conn: &mut AsyncPgConnection, _metrics: &Metrics) -> HookResult<PoolError> {
+    tracing::trace!(
+        target: "database",
+        is_broken = conn.is_broken(),
+        "post recycle hook is running"
+    );
 
     // Note: should never return an error.
     Ok(())

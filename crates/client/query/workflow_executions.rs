@@ -4,7 +4,6 @@ use axiston_db_schema::schema;
 use diesel::dsl::*;
 use diesel::prelude::*;
 use diesel_async::{AsyncPgConnection, RunQueryDsl};
-#[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use time::OffsetDateTime;
@@ -13,8 +12,7 @@ use uuid::Uuid;
 use crate::dsl::*;
 use crate::{DatabaseResult, QueryOrderBy};
 
-#[derive(Debug, Clone, Insertable)]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, Serialize, Deserialize, Insertable)]
 #[diesel(table_name = schema::workflow_executions)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 #[must_use = "forms do nothing unless you use them"]
@@ -27,8 +25,7 @@ pub struct WorkflowExecutionCreateInput {
     pub ended_at: OffsetDateTime,
 }
 
-#[derive(Debug, Clone, Queryable)]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, Serialize, Deserialize, Queryable)]
 #[diesel(table_name = schema::workflow_executions)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 #[must_use = "forms do nothing unless you use them"]
@@ -58,8 +55,7 @@ pub async fn create_workflow_execution(
     })
 }
 
-#[derive(Debug, Clone)]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[must_use = "forms do nothing unless you use them"]
 pub struct WorkflowExecutionListInput {
     pub workflow_id: Uuid,
@@ -70,8 +66,7 @@ pub struct WorkflowExecutionListInput {
     pub sort_order: QueryOrderBy,
 }
 
-#[derive(Debug, Clone)]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[must_use = "forms do nothing unless you use them"]
 pub enum WorkflowsSortBy {
     StartedAt,
@@ -79,8 +74,7 @@ pub enum WorkflowsSortBy {
     TimeSpent,
 }
 
-#[derive(Debug, Clone, Queryable, Selectable)]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, Serialize, Deserialize, Queryable, Selectable)]
 #[diesel(table_name = schema::workflow_executions)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 #[must_use = "forms do nothing unless you use them"]
@@ -131,15 +125,13 @@ pub async fn list_workflow_executions(
     Ok(query)
 }
 
-#[derive(Debug, Clone)]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[must_use = "forms do nothing unless you use them"]
 pub struct WorkflowExecutionViewInput {
     pub execution_id: Uuid,
 }
 
-#[derive(Debug, Clone, Queryable, Selectable)]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, Serialize, Deserialize, Queryable, Selectable)]
 #[diesel(table_name = schema::workflow_executions)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 #[must_use = "forms do nothing unless you use them"]
@@ -174,8 +166,7 @@ pub async fn view_workflow_execution(
     Ok(query)
 }
 
-#[derive(Debug, Clone)]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[must_use = "forms do nothing unless you use them"]
 pub struct WorkflowExecutionDeleteInput {
     pub execution_id: Uuid,

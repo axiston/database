@@ -5,14 +5,31 @@ use diesel::dsl::*;
 use diesel::prelude::*;
 use diesel_async::{AsyncPgConnection, RunQueryDsl};
 use ipnet::IpNet;
-#[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 use crate::DatabaseResult;
 
-#[derive(Debug, Clone, Insertable, Queryable, Selectable)]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[must_use = "forms do nothing unless you use them"]
+pub struct AccountSessionCreateInput<'a> {
+    pub account_id: Uuid,
+    pub region_id: &'a str,
+    pub ip_address: IpNet,
+    pub user_agent: &'a str,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Queryable)]
+#[diesel(table_name = schema::account_sessions)]
+#[diesel(check_for_backend(diesel::pg::Pg))]
+#[must_use = "forms do nothing unless you use them"]
+pub struct AccountSessionCreateOutput {
+    pub account_id: Uuid,
+    pub token_seq: Uuid,
+    pub update_seq: Uuid,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Insertable, Queryable, Selectable)]
 #[diesel(table_name = schema::account_sessions)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 #[must_use = "forms do nothing unless you use them"]
@@ -22,12 +39,14 @@ pub struct AccountSession {
     pub user_agent: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Queryable)]
+#[diesel(table_name = schema::account_sessions)]
+#[diesel(check_for_backend(diesel::pg::Pg))]
+#[must_use = "forms do nothing unless you use them"]
 pub struct AccountSessionToken {
     pub account_id: Uuid,
     pub token_seq: Uuid,
 }
-
 /// Creates the new session and returns the token sequence.
 ///
 /// # Tables
@@ -35,26 +54,22 @@ pub struct AccountSessionToken {
 /// - account_sessions
 pub async fn create_session(
     conn: &mut AsyncPgConnection,
-    form_account_id: Uuid,
-    form: AccountSession,
-) -> DatabaseResult<AccountSessionToken> {
+    form: AccountSessionCreateInput<'_>,
+) -> DatabaseResult<AccountSessionCreateOutput> {
     use schema::account_sessions::dsl::*;
 
     let query = insert_into(account_sessions)
         .values((
-            account_id.eq(form_account_id),
+            account_id.eq(form.account_id),
             region_id.eq(form.region_id),
             ip_address.eq(form.ip_address),
             user_agent.eq(form.user_agent),
         ))
-        .returning(token_seq)
+        .returning((account_id, token_seq, update_seq))
         .get_result(conn)
         .await?;
 
-    Ok(AccountSessionToken {
-        account_id: form_account_id,
-        token_seq: query,
-    })
+    Ok(query)
 }
 
 /// Returns the active session.

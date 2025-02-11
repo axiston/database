@@ -27,7 +27,7 @@ pub struct Database {
 
 impl Database {
     /// Returns a new [`Database`] connection pool.
-    pub fn new<A: Into<String>>(addr: A, pool_config: DatabaseConfig) -> Self {
+    pub fn new(addr: impl Into<String>, pool_config: DatabaseConfig) -> Self {
         let mut manager_config = ManagerConfig::default();
         manager_config.custom_setup = Box::new(setup_callback);
         manager_config.recycling_method = pool_config.recycling_method.unwrap_or_default();
@@ -48,12 +48,12 @@ impl Database {
     }
 
     /// Returns a new [`Database`] connection pool for a single gateway.
-    pub fn new_single_gateway<A: Into<String>>(addr: A) -> Self {
+    pub fn new_single_gateway(addr: impl Into<String>) -> Self {
         Self::new(addr, DatabaseConfig::new_single_gateway())
     }
 
     /// Returns a new [`Database`] connection pool for multiple gateways.
-    pub fn new_multiple_gateways<A: Into<String>>(addr: A) -> Self {
+    pub fn new_multiple_gateways(addr: impl Into<String>) -> Self {
         Self::new(addr, DatabaseConfig::new_multiple_gateways())
     }
 
@@ -84,14 +84,16 @@ mod test {
     #[tokio::test]
     async fn connect_single_gateway() -> DatabaseResult<()> {
         let addr = "postgresql://postgres:postgres@localhost:5432/postgres";
-        let _ = Database::new_single_gateway(addr);
+        let database = Database::new_single_gateway(addr);
+        let _conn = database.get_connection().await?;
         Ok(())
     }
 
     #[tokio::test]
     async fn connect_multiple_gateways() -> DatabaseResult<()> {
         let addr = "postgresql://postgres:postgres@localhost:5432/postgres";
-        let _ = Database::new_multiple_gateways(addr);
+        let database = Database::new_multiple_gateways(addr);
+        let _conn = database.get_connection().await?;
         Ok(())
     }
 }

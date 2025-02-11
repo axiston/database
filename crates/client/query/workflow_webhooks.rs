@@ -4,15 +4,13 @@ use axiston_db_schema::schema;
 use diesel::dsl::*;
 use diesel::prelude::*;
 use diesel_async::{AsyncPgConnection, RunQueryDsl};
-#[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 use crate::workflows::WorkflowViewOutput;
 use crate::DatabaseResult;
 
-#[derive(Debug, Clone, Insertable)]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, Serialize, Deserialize, Insertable)]
 #[diesel(table_name = schema::workflow_webhooks)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 #[must_use = "forms do nothing unless you use them"]

@@ -46,8 +46,10 @@ CREATE INDEX accounts_credentials_idx
 -- User session tracking with unique ID and security metadata.
 CREATE TABLE account_sessions
 (
-    -- Unique session identifier with account association.
+    -- Unique access session identifier with account association.
     token_seq  UUID        NOT NULL DEFAULT gen_random_uuid(),
+    -- Unique refresh session identifier with account association.
+    update_seq UUID        NOT NULL DEFAULT gen_random_uuid(),
     -- Reference to the associated user account.
     account_id UUID        NOT NULL REFERENCES accounts (id) ON DELETE CASCADE,
     -- Two-character region code for session origin (e.g., "US", "EU").

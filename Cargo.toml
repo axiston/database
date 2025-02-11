@@ -8,7 +8,7 @@ members = [
 ]
 
 [workspace.package]
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 license = "Apache-2.0"
 publish = true
@@ -19,8 +19,8 @@ homepage = "https://github.com/axiston/axiston"
 documentation = "https://docs.rs/axiston"
 
 [workspace.dependencies]
-axiston-db-client = { version = "0.1.0", path = "./crates/client" }
-axiston-db-schema = { version = "0.1.0", path = "./crates/schema" }
+axiston-db-client = { version = "0.2.0", path = "./crates/client" }
+axiston-db-schema = { version = "0.2.0", path = "./crates/schema" }
 
 tokio = { version = "1.43", features = ["rt-multi-thread", "macros", "process"] }
 deadpool = { version = "0.12", features = ["managed", "rt_tokio_1"] }
@@ -35,8 +35,8 @@ diesel-derive-enum = { version = "2.1", features = ["postgres"] }
 
 serde = { version = "1.0", features = ["derive"] }
 serde_json = { version = "1.0", features = [] }
-strum = { version = "0.26", features = ["derive"] }
-derive_more = { version = "1.0", features = ["full"] }
+strum = { version = "0.27", features = ["derive"] }
+derive_more = { version = "2.0", features = ["full"] }
 time = { version = "0.3", features = ["serde", "formatting", "parsing"] }
 uuid = { version = "1.12", features = ["serde"] }
 ipnet = { version = "2.10", features = ["serde"] }

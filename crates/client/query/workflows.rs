@@ -4,7 +4,6 @@ use axiston_db_schema::schema;
 use diesel::dsl::*;
 use diesel::prelude::*;
 use diesel_async::{AsyncPgConnection, RunQueryDsl};
-#[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use time::OffsetDateTime;
@@ -12,8 +11,7 @@ use uuid::Uuid;
 
 use crate::DatabaseResult;
 
-#[derive(Debug, Clone, Insertable)]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, Serialize, Deserialize, Insertable)]
 #[diesel(table_name = schema::workflows)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 #[must_use = "forms do nothing unless you use them"]
@@ -25,8 +23,7 @@ pub struct WorkflowCreateInput<'a> {
     pub rt_metadata: Option<Value>,
 }
 
-#[derive(Debug, Clone, Queryable)]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, Serialize, Deserialize, Queryable)]
 #[diesel(table_name = schema::workflows)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 #[must_use = "forms do nothing unless you use them"]
@@ -57,8 +54,7 @@ pub async fn create_workflow(
     Ok(query)
 }
 
-#[derive(Debug, Clone, AsChangeset)]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, Serialize, Deserialize, AsChangeset)]
 #[diesel(table_name = schema::workflows)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 #[must_use = "forms do nothing unless you use them"]
@@ -90,8 +86,7 @@ pub async fn update_workflow(
     Ok(())
 }
 
-#[derive(Debug, Clone, Queryable, Selectable)]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, Serialize, Deserialize, Queryable, Selectable)]
 #[diesel(table_name = schema::workflows)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 #[must_use = "forms do nothing unless you use them"]

@@ -4,15 +4,13 @@ use axiston_db_schema::schema;
 use diesel::dsl::*;
 use diesel::prelude::*;
 use diesel_async::{AsyncPgConnection, RunQueryDsl};
-#[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 use time::OffsetDateTime;
 use uuid::Uuid;
 
 use crate::DatabaseResult;
 
-#[derive(Debug, Clone, Insertable)]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, Serialize, Deserialize, Insertable)]
 #[diesel(table_name = schema::accounts)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 #[must_use = "forms do nothing unless you use them"]
@@ -22,8 +20,7 @@ pub struct AccountCreateInput<'a> {
     pub password_hash: &'a str,
 }
 
-#[derive(Debug, Clone, Queryable)]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, Serialize, Deserialize, Queryable)]
 #[diesel(table_name = schema::accounts)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 #[must_use = "forms do nothing unless you use them"]
@@ -55,8 +52,7 @@ pub async fn create_account(
     Ok(query)
 }
 
-#[derive(Debug, Clone, Queryable, Selectable)]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, Serialize, Deserialize, Queryable, Selectable)]
 #[diesel(table_name = schema::accounts)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 #[must_use = "forms do nothing unless you use them"]
@@ -92,8 +88,7 @@ pub async fn view_account(
     Ok(query)
 }
 
-#[derive(Debug, Clone, AsChangeset)]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, Serialize, Deserialize, AsChangeset)]
 #[diesel(table_name = schema::accounts)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 #[must_use = "forms do nothing unless you use them"]

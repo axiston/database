@@ -21,10 +21,13 @@ pub mod workspaces;
 /// Used to specify ordering in select/view methods.
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 pub enum QueryOrderBy {
-    /// Creates a SQL `ASC` expression, representing this expression in ascending order.
-    #[cfg_attr(feature = "serde", serde(rename = "asc"))]
+    /// Creates a SQL `ASC` expression, representing this expression
+    /// in the ascending order.
+    #[serde(rename = "asc")]
     Ascending,
-    /// Creates a SQL `DESC` expression, representing this expression in descending order.
-    #[cfg_attr(feature = "serde", serde(rename = "desc"))]
+
+    /// Creates a SQL `DESC` expression, representing this expression
+    /// in the descending order.
+    #[serde(rename = "desc")]
     Descending,
 }

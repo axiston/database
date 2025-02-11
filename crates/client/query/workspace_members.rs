@@ -5,15 +5,13 @@ use axiston_db_schema::schema;
 use diesel::dsl::*;
 use diesel::prelude::*;
 use diesel_async::{AsyncPgConnection, RunQueryDsl};
-#[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 use time::OffsetDateTime;
 use uuid::Uuid;
 
 use crate::DatabaseResult;
 
-#[derive(Debug, Clone, Insertable)]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, Serialize, Deserialize, Insertable)]
 #[diesel(table_name = schema::workspace_members)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 #[must_use = "forms do nothing unless you use them"]
@@ -24,8 +22,7 @@ pub struct WorkspaceMemberCreateInput {
     pub updated_by: Uuid,
 }
 
-#[derive(Debug, Clone, Queryable, Selectable)]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, Serialize, Deserialize, Queryable, Selectable)]
 #[diesel(table_name = schema::workspace_members)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 #[must_use = "forms do nothing unless you use them"]
@@ -42,8 +39,7 @@ pub struct WorkspaceMemberOutput {
     pub updated_at: OffsetDateTime,
 }
 
-#[derive(Debug, Default, Clone, AsChangeset)]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Default, Clone, Serialize, Deserialize, AsChangeset)]
 #[diesel(table_name = schema::workspace_members)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 #[must_use = "forms do nothing unless you use them"]

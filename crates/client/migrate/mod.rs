@@ -29,17 +29,19 @@ impl DatabaseExt for Database {
         let mut wrapper: AsyncConnectionWrapper<_> = conn.into();
         pre_migrate(wrapper.deref_mut()).await?;
 
-        let migrations: DatabaseResult<u64> = spawn_blocking(move || {
-            let versions = wrapper
+        let (migrations, mut wrapper) = spawn_blocking(move || {
+            match wrapper
                 .run_pending_migrations(MIGRATIONS)
-                .map_err(DatabaseError::Migration)?;
-            Ok(versions.len() as u64)
+                .map_err(DatabaseError::Migration)
+            {
+                Ok(v) => (Ok(v.len() as u64), wrapper),
+                Err(x) => (Err(x), wrapper),
+            }
         })
         .await
         .unwrap();
 
-        let mut conn = self.get_connection().await?;
-        post_migrate(conn.deref_mut()).await?;
+        post_migrate(wrapper.deref_mut()).await?;
         migrations
     }
 
@@ -48,17 +50,19 @@ impl DatabaseExt for Database {
         let mut wrapper: AsyncConnectionWrapper<_> = conn.into();
         pre_migrate(wrapper.deref_mut()).await?;
 
-        let migrations: DatabaseResult<u64> = spawn_blocking(move || {
-            let versions = wrapper
+        let (migrations, mut wrapper) = spawn_blocking(move || {
+            match wrapper
                 .revert_all_migrations(MIGRATIONS)
-                .map_err(DatabaseError::Migration)?;
-            Ok(versions.len() as u64)
+                .map_err(DatabaseError::Migration)
+            {
+                Ok(v) => (Ok(v.len() as u64), wrapper),
+                Err(x) => (Err(x), wrapper),
+            }
         })
         .await
         .unwrap();
 
-        let mut conn = self.get_connection().await?;
-        post_migrate(conn.deref_mut()).await?;
+        post_migrate(wrapper.deref_mut()).await?;
         migrations
     }
 }

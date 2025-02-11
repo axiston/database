@@ -2,18 +2,37 @@
 //!
 //! [`DatabaseExt`]: crate::DatabaseExt
 
+use diesel_async::pooled_connection::PoolableConnection;
 use diesel_async::AsyncPgConnection;
 
 use crate::DatabaseResult;
 
-pub async fn pre_migrate(_conn: &mut AsyncPgConnection) -> DatabaseResult<()> {
-    tracing::trace!(target: "database", "pre_migrate hook is running");
+/// Custom hook called before a connection has been used to run migrations.
+///
+/// See [`DatabaseExt`] for more details.
+///
+/// [`DatabaseExt`]: crate::DatabaseExt
+pub async fn pre_migrate(conn: &mut AsyncPgConnection) -> DatabaseResult<()> {
+    tracing::trace!(
+        target: "database",
+        is_broken = conn.is_broken(),
+        "pre migrate hook is running"
+    );
 
     Ok(())
 }
 
-pub async fn post_migrate(_conn: &mut AsyncPgConnection) -> DatabaseResult<()> {
-    tracing::trace!(target: "database", "post_migrate hook is running");
+/// Custom hook called after a connection has been used to run migrations.
+///
+/// See [`DatabaseExt`] for more details.
+///
+/// [`DatabaseExt`]: crate::DatabaseExt
+pub async fn post_migrate(conn: &mut AsyncPgConnection) -> DatabaseResult<()> {
+    tracing::trace!(
+        target: "database",
+        is_broken = conn.is_broken(),
+        "post migrate hook is running"
+    );
 
     Ok(())
 }
